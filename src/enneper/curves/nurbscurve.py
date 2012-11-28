@@ -32,6 +32,7 @@ __all__ = ['NURBSCurve']
 class NURBSCurve(object):
 
     _init_args = {
+        ('NURBSCurve',): '_copy',
         ('ndarray', 'ndarray', 'int'): '_init',
     }
 
@@ -50,6 +51,11 @@ class NURBSCurve(object):
         self._ctrl_points = ctrl_points
         self._degree = degree
         self._knots = knots
+
+    def _copy(self, curve):
+        self._ctrl_points = curve.ctrl_points.copy()
+        self._degree = curve.degree
+        self._knots = curve.knots.copy()
 
     @ property
     def ctrl_points(self):
