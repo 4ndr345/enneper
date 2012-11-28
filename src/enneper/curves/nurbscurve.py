@@ -69,6 +69,9 @@ class NURBSCurve(object):
     def knots(self):
         return self._knots
 
+    def elevate_degree(self, t):
+        raise NotImplementedError
+
     def evaluate_at(self, t, homogenous=False):
         span = efn.find_span(t, self.degree, self.knots)
         n = efn.get_basis_functions(span, t, self.degree, self.knots)
@@ -80,3 +83,20 @@ class NURBSCurve(object):
             return point
         point /= point[-1]
         return point[0:-1]
+
+    def merge_knots(self, knots):
+        # Find the knots to insert
+        done, i, ia, ib = False, 0, 0, 0
+        knots_to_insert = np.zeros(knots.shape)
+        while not done:
+            if knots[ib] == self.knots[ia]:
+                ib, ia = ib + 1, ia + 1
+            else:
+                knots_to_insert[i], i, ib = knots[ib], i + 1, ib + 1
+            done = ia >= self.knots.size or ib >= knots.size
+        # Refine the curve if necessary
+        if knots_to_insert.size > 0:
+            self.refine_knots(knots_to_insert[:i])
+
+    def refine_knots(self, knots):
+        raise NotImplementedError
