@@ -31,38 +31,55 @@ import numpy as np
 class NURBSCurve(unittest.TestCase):
 
     def setUp(self):
-        self._args = [
+        self.args = [
             np.array([[0, 0, 1], [4, 4, 4], [3, 2, 1], [4, 1, 1], [5, -1, 1]]),
             np.array([0, 0, 0, 1, 2, 3, 3, 3]),
             2
         ]
-        self._curve = ec.NURBSCurve(*self._args)
+        self.curve = ec.NURBSCurve(*self.args)
 
     def test_init(self):
         #---- testing ctrl_points assignment ----------------------------------
-        actual = self._curve.ctrl_points
-        desired = self._args[0]
+        actual = self.curve.ctrl_points
+        desired = self.args[0]
         np.testing.assert_equal(actual, desired)
         #---- testing knots assignment ----------------------------------------
-        actual = self._curve.knots
-        desired = self._args[1]
+        actual = self.curve.knots
+        desired = self.args[1]
         np.testing.assert_equal(actual, desired)
         #---- testing degree assignment ---------------------------------------
-        actual = self._curve.degree
-        desired = self._args[2]
+        actual = self.curve.degree
+        desired = self.args[2]
         np.testing.assert_equal(actual, desired)
         #---- testing n + p + 1 != m ------------------------------------------
-        self._args[2] = 3
-        self.assertRaises(ValueError, ec.NURBSCurve, *self._args)
+        self.args[2] = 3
+        self.assertRaises(ValueError, ec.NURBSCurve, *self.args)
+    
+    def test_copy(self):
+        curve = ec.NURBSCurve(self.curve)
+        #---- testing ctrl_points assignment ----------------------------------
+        actual = curve.ctrl_points
+        desired = self.curve.ctrl_points
+        np.testing.assert_equal(actual, desired)
+        self.assertNotEqual(id(actual), id(desired))
+        #---- testing knots assignment ----------------------------------------
+        actual = curve.knots
+        desired = self.curve.knots
+        np.testing.assert_equal(actual, desired)
+        self.assertNotEqual(id(actual), id(desired))
+        #---- testing degree assignment ---------------------------------------
+        actual = curve.degree
+        desired = self.curve.degree
+        np.testing.assert_equal(actual, desired)
 
     def test_initializer_not_available(self):
         self.assertRaises(TypeError, ec.NURBSCurve)
 
     def test_evaluate_at(self):
         """The NURBS Book 2nd edition: example 4.1 (page 122 ff.)"""
-        actual = self._curve.evaluate_at(1)
+        actual = self.curve.evaluate_at(1)
         desired = np.array([1.4, 1.2])
         np.testing.assert_equal(actual, desired)
-        actual = self._curve.evaluate_at(1, True)
+        actual = self.curve.evaluate_at(1, True)
         desired = np.array([3.5, 3, 2.5])
         np.testing.assert_equal(actual, desired)
