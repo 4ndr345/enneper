@@ -27,11 +27,11 @@ import enneper.curves as ec
 import enneper.surfaces as es
 
 
-def get_ruled_surface(cams):
-    cams = [ec.NURBSCurve(cam) for cam in cams]
-    degree_u, degree_v = max(cams[0].degree, cams[1].degree), 1
-    map(lambda cam: cam.elevate_degree(degree_u - cam.degree), cams)
-    map(lambda i: cams[i % 2].merge_knots(cams[(i + 1) % 2].knots), range(2))
-    knots_u, knots_v = cams[0].knots, np.array([0., 0., 1., 1.])
-    ctrl_points = np.append(*[[cam.ctrl_points] for cam in cams])
+def get_ruled_surface(curves):
+    curves = [ec.NURBSCurve(curve) for curve in curves]
+    degree_u, degree_v = max(curves[0].degree, curves[1].degree), 1
+    map(lambda curve: curve.elevate_degree(degree_u - curve.degree), curves)
+    map(lambda i: curves[i % 2].merge_knots(curves[(i + 1) % 2].knots), [0, 1])
+    knots_u, knots_v = curves[0].knots, np.array([0., 0., 1., 1.])
+    ctrl_points = np.append(*[[curve.ctrl_points] for curve in curves])
     return es.NURBSSurface(ctrl_points, degree_u, degree_v, knots_u, knots_v)
