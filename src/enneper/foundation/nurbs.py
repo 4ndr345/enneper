@@ -27,6 +27,10 @@ import numpy as np
 def find_span(u, degree, knots):
     """Determine the knot span index"""
     low, high = degree, knots.size - degree
+    # Special case
+    if u == knots[high - 1]:
+        return high - 2
+    # search
     return np.where(knots[low:high] <= u)[0][-1] + degree
 
 
