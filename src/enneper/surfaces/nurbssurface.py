@@ -32,18 +32,20 @@ __all__ = ['NURBSSurface']
 class NURBSSurface(object):
 
     _init_args = {
-        3: '_init',
+        ('tuple', 'int', 'int'): 'resize',
+        ('ndarray', 'ndarray', 'ndarray', 'int', 'int'): '_init',
     }
 
     def __init__(self, *args):
-        if len(args) not in NURBSSurface._init_args:
+        key = tuple(type(arg).__name__ for arg in args)
+        if key not in NURBSSurface._init_args:
             raise TypeError
         self._ctrl_points = None
         self._degree_u = None
         self._degree_v = None
         self._knots_u = None
         self._knots_v = None
-        getattr(self, NURBSSurface._init_args[len(args)])(*args)
+        getattr(self, NURBSSurface._init_args[key])(*args)
 
     def _init(self, ctrl_points, knots_u, knots_v, degree_u, degree_v):
         if ctrl_points.shape[0] + degree_u + 1 != knots_u.size:
@@ -82,15 +84,22 @@ class NURBSSurface(object):
         span_v = efn.find_span(v, self.degree_v, self.knots_v)
         n_v = efn.get_basis_functions(span_v, v, self.degree_v, self.knots_v)
         index_u, index_v = span_u - self.degree_u, span_v - self.degree_v
-        tmp = np.zeros(self.degree + 1)
-        for i in range(self.degree + 1):
-            for j in range(i + 1):
+        tmp = np.zeros((self.degree_v + 1, self.ctrl_points.shape[2]))
+        for i in range(self.degree_v + 1):
+            for j in range(self.degree_u + 1):
                 tmp[i] += n_u[j] * self.ctrl_points[index_u + j, index_v + i]
-        point = np.zeros(self.ctrl_points.shape[1])
+        point = np.zeros(self.ctrl_points.shape[2])
         # todo: optimize loop: use np.sum and np.multiply
-        for i in range(self.degree + 1):
+        for i in range(self.degree_v + 1):
             point += n_v[i] * tmp[i]
         if homogenous:
             return point
         point /= point[-1]
         return point[0:-1]
+
+    def resize(self, shape, degree_u, degree_v):
+        self._ctrl_points = np.zeros(shape)
+        self._degree_u = degree_u
+        self._degree_v = degree_v
+        self._knots_u = np.zeros(shape[0] + degree_u + 1)
+        self._knots_v = np.zeros(shape[1] + degree_v + 1)
