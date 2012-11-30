@@ -34,6 +34,7 @@ class NURBSCurve(object):
     _init_args = {
         ('NURBSCurve',): '_copy',
         ('ndarray', 'ndarray', 'int'): '_init',
+        ('tuple', 'int'): 'resize'
     }
 
     def __init__(self, *args):
@@ -100,3 +101,8 @@ class NURBSCurve(object):
 
     def refine_knots(self, knots):
         raise NotImplementedError
+
+    def resize(self, shape, degree):
+        self._ctrl_points = np.zeros(shape)
+        self._degree = degree
+        self._knots = np.zeros(shape[0] + degree + 1)
