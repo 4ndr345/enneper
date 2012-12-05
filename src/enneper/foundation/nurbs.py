@@ -49,3 +49,20 @@ def get_basis_functions(i, u, degree, knots):
             cache = left[j - k] * tmp
         basis_func[j] = cache
     return basis_func
+
+
+def get_cartesian_points(h_pnts):
+    shape = list(h_pnts.shape)
+    h_coords = h_pnts.reshape(-1, shape[-1]).transpose()
+    coords = np.divide(h_coords[:-1], h_coords[-1])
+    shape[-1] -= 1
+    return coords.transpose().reshape(*shape)
+
+
+def get_homogeneous_point(pnts, weights):
+    shape = list(pnts.shape)
+    coords = pnts.reshape(-1, shape[-1]).transpose()
+    weights = weights.reshape(-1)
+    h_coords = np.vstack((np.multiply(coords, weights), weights))
+    shape[-1] += 1
+    return h_coords.transpose().reshape(*shape)
