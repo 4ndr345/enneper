@@ -54,7 +54,7 @@ class NURBSCurve(unittest.TestCase):
         #---- testing n + p + 1 != m ------------------------------------------
         self.args[2] = 3
         self.assertRaises(ValueError, ec.NURBSCurve, *self.args)
-    
+
     def test_copy(self):
         curve = ec.NURBSCurve(self.curve)
         #---- testing ctrl_points assignment ----------------------------------

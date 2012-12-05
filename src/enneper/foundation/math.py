@@ -34,8 +34,8 @@ def intersect_lines(pos_v, dir_v):
 
 
 def p_norm(v, p):
-    return np.power(np.sum(np.abs(v), p), 1. / p)
+    return np.power(np.sum(np.power(np.abs(v), p)), 1. / p)
 
 
 def project_point_to_line(pnt, pos_v, dir_v):
-    return pnt + np.dot(pos_v - pnt, dir_v) / np.dot(dir_v, dir_v) * dir_v
+    return pos_v + np.dot(pnt - pos_v, dir_v) / np.dot(dir_v, dir_v) * dir_v
