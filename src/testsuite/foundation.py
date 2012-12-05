@@ -50,21 +50,21 @@ class TestFoundation(unittest.TestCase):
     def test_get_homogeneous_points_of_a_point(self):
         pnts = np.array([1, 1])
         weights = np.array([2])
-        actual = fdn.nurbs.get_homogeneous_point(pnts, weights)
+        actual = fdn.nurbs.get_homogeneous_points(pnts, weights)
         desired = np.array([2, 2, 2])
         np.testing.assert_equal(actual, desired)
 
     def test_get_homogeneous_points_of_a_curve(self):
         pnts = np.array([[1, 0], [1, 1]])
         weights = np.array([1, 2])
-        actual = fdn.nurbs.get_homogeneous_point(pnts, weights)
+        actual = fdn.nurbs.get_homogeneous_points(pnts, weights)
         desired = np.array([[1, 0, 1], [2, 2, 2]])
         np.testing.assert_equal(actual, desired)
 
     def test_get_homogeneous_points_of_a_surface(self):
         pnts = np.array([[[1, 0], [1, 1]], [[0, 1], [-1, 1]]])
         weights = np.array([[1, 2], [1, 2]])
-        actual = fdn.nurbs.get_homogeneous_point(pnts, weights)
+        actual = fdn.nurbs.get_homogeneous_points(pnts, weights)
         desired = np.array([[[1, 0, 1], [2, 2, 2]], [[0, 1, 1], [-2, 2, 2]]])
         np.testing.assert_equal(actual, desired)
 

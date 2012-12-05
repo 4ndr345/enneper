@@ -59,7 +59,7 @@ def get_cartesian_points(h_pnts):
     return coords.transpose().reshape(*shape)
 
 
-def get_homogeneous_point(pnts, weights):
+def get_homogeneous_points(pnts, weights):
     shape = list(pnts.shape)
     coords = pnts.reshape(-1, shape[-1]).transpose()
     weights = weights.reshape(-1)
