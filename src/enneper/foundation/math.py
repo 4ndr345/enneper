@@ -25,12 +25,16 @@ import numpy as np
 
 
 def intersect_lines(pos_v, dir_v):
-    a = np.array([[1, -1], [1, -1]])
-    a[0] *= [np.dot(dir_v[0], dir_v[i]) for i in range(2)]
-    a[1] *= [np.dot(dir_v[1], dir_v[i]) for i in range(2)]
-    b = [np.dot(dir_v[i], (pos_v[1] - pos_v[0])) for i in range(2)]
-    t = np.linalg.solve(np.array(a), np.array(b))
-    return pos_v + np.array([dir_v[i] * t[i] for i in range(2)])
+    p13 = pos_v[0] - pos_v[1]
+    d1343 = np.dot(p13, dir_v[1])
+    d4321 = np.dot(dir_v[1], dir_v[0])
+    d1321 = np.dot(p13, dir_v[0])
+    d4343 = np.dot(dir_v[1], dir_v[1])
+    d2121 = np.dot(dir_v[0], dir_v[0])
+    denom = d2121 * d4343 - d4321 * d4321
+    numer = d1343 * d4321 - d1321 * d4343
+    mua = numer / denom
+    return pos_v[0] + mua * dir_v[0], 1
 
 
 def p_norm(v, p):
