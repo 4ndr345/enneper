@@ -60,28 +60,31 @@ def get_surface_of_revolution(curve, pos_v, dir_v, phi):
     surface.knots_u[n:(n + 3)] = np.ones(3)
     surface.knots_v[:] = curve.knots
     for j in range(m):
+        h_point_even = fdn.nurbs.get_homogeneous_points(pj[j], wj[j])
+        surface.ctrl_points[0, j] = h_point_even
         o = fdn.math.project_point_to_line(pj[j], pos_v, dir_v)
-        x = pj[j] - o
-        y = np.cross(dir_v, x)
-        r = fdn.math.p_norm(x, 2)
-        index = 0
+        r = fdn.math.p_norm(pj[j] - o, 2)
         if r < 1e-7:
-            h_point = fdn.nurbs.get_homogeneous_points(o, wj[j])
-            for i in range(narcs * 2 + 1):
-                surface.ctrl_points[i, j] = h_point
+            h_point_odd = fdn.nurbs.get_homogeneous_points(pj[j], wm * wj[j])
+            for i in range(0, narcs * 2, 2):
+                surface.ctrl_points[i + 2, j] = h_point_even
+                surface.ctrl_points[i + 1, j] = h_point_odd
             continue
-        h_point = fdn.nurbs.get_homogeneous_points(pj[j], wj[j])
-        surface.ctrl_points[0, j] = h_point
+        x = pj[j] - o
+        x /= fdn.math.p_norm(x, 2)
+        y = np.cross(dir_v, x)
+        y /= fdn.math.p_norm(y, 2)
+        index = 0
         p0 = pj[j]
         t0 = y
         for i in range(1, narcs + 1):
             p2 = o + r * cosines[i] * x + r * sines[i] * y
             t2 = -sines[i] * x + cosines[i] * y
-            h_point = fdn.nurbs.get_homogeneous_points(p2, wj[j])
-            surface.ctrl_points[index + 2, j] = h_point
+            h_point_even = fdn.nurbs.get_homogeneous_points(p2, wj[j])
+            surface.ctrl_points[index + 2, j] = h_point_even
             pnt, _ = fdn.math.intersect_lines(npa([p0, p2]), npa([t0, t2]))
-            h_point = fdn.nurbs.get_homogeneous_points(pnt, wm * wj[j])
-            surface.ctrl_points[index + 1, j] = h_point
+            h_point_odd = fdn.nurbs.get_homogeneous_points(pnt, wm * wj[j])
+            surface.ctrl_points[index + 1, j] = h_point_odd
             index += 2
             if i < narcs:
                 p0, t0 = p2, t2
