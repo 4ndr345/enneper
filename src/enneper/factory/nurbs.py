@@ -28,7 +28,7 @@ import enneper.surfaces as es
 import enneper.foundation as fdn
 
 
-npa = lambda array: np.array(array)
+npa = lambda array: np.asarray(array)
 
 
 def get_ruled_surface(curves):
@@ -42,6 +42,8 @@ def get_ruled_surface(curves):
 
 
 def get_surface_of_revolution(curve, pos_v, dir_v, phi):
+    pos_v = npa(pos_v)
+    dir_v = npa(dir_v)
     narcs = 3 if phi < 1.5 * np.pi else 4
     narcs = 2 if phi < np.pi else narcs
     narcs = 1 if phi < .5 * np.pi else narcs
