@@ -21,7 +21,6 @@
 #***************************************************************************
 
 
-
 import numpy as np
 
 import enneper.foundation as fdn
@@ -33,8 +32,10 @@ __all__ = ['NURBSSurface']
 class NURBSSurface(object):
 
     _init_args = {
-        ('tuple', 'int', 'int'): 'resize',
-        ('ndarray', 'ndarray', 'ndarray', 'int', 'int'): '_init',
+        (): '_empty_initializer',
+        ('surface',): '_copy_initializer',
+        ('shape', 'degree_u', 'degree_v'): 'resize',
+        ('ctrl_points', 'degree_u', 'degree_v', 'knots_u', 'knots_v'): '_init',
     }
 
     def __init__(self, *args):
@@ -48,7 +49,20 @@ class NURBSSurface(object):
         self._knots_v = None
         getattr(self, NURBSSurface._init_args[key])(*args)
 
+    def _empty_initializer(self):
+        pass
+
+    def _copy_initializer(self, surface):
+        self._ctrl_points = surface.ctrl_points.copy()
+        self._degree_u = surface.degree
+        self._degree_v = surface.degree
+        self._knots_u = surface.knots_u.copy()
+        self._knots_v = surface.knots_v.copy()
+
     def _init(self, ctrl_points, knots_u, knots_v, degree_u, degree_v):
+        ctrl_points = np.asarray(ctrl_points)
+        knots_u = np.asarray(knots_u)
+        knots_v = np.asarray(knots_v)
         if ctrl_points.shape[0] + degree_u + 1 != knots_u.size:
             raise ValueError
         if ctrl_points.shape[1] + degree_v + 1 != knots_v.size:
@@ -79,12 +93,19 @@ class NURBSSurface(object):
     def knots_v(self):
         return self._knots_v
 
-    def export_as_vrml(self, fname, n=50, m=50, us=(0, 1), vs=(0, 1)):
+    def export_as_vrml(self, fname, **opt):
+        color = np.asarray(opt.get('color', [255, 255, 255]))
+        n = opt.get('vertex_count_u', 20)
+        m = opt.get('vertex_count_v', 20)
+        u_s = opt.get('u_start', 0)
+        u_e = opt.get('u_end', 1)
+        v_s = opt.get('v_start', 0)
+        v_e = opt.get('v_end', 1)
         fname = fname if fname[:-4] == '.wrl' else ''.join((fname, '.wrl'))
         n = n if n > 1 else 2
         m = m if m > 1 else 2
-        p_max = self.evaluate_at(us[0], vs[0])
-        p_min = self.evaluate_at(us[0], vs[0])
+        p_max = self.evaluate_at(u_s, v_s)
+        p_min = self.evaluate_at(u_s, v_s)
         if self.ctrl_points.shape[2] == 4:
             write_point = lambda p: "\t\t\t\t{0} {1} {2},\n".format(*p)
         elif self.ctrl_points.shape[2] == 3:
@@ -100,15 +121,16 @@ class NURBSSurface(object):
             fout.write('\t\tShape {\n')
             fout.write('\t\t appearance Appearance {\n')
             fout.write('\t\t\tmaterial Material{ diffuseColor ')
-            fout.write('{0} {1} {2} '.format(1, 1, 1))
+            color = np.divide(color, np.asarray([255, 255, 255]))
+            fout.write('{0} {1} {2} '.format(*color))
             fout.write('}\n')
             fout.write('\t\t }\n')
             fout.write('\t\t geometry IndexedFaceSet {\n')
             fout.write('\t\t\tsolid FALSE\n')
             fout.write('\t\t\tcoord Coordinate {\n')
             fout.write('\t\t\t point [\n')
-            for u in np.linspace(us[0], us[1], n):
-                for v in np.linspace(vs[0], vs[1], m):
+            for u in np.linspace(u_s, u_e, n):
+                for v in np.linspace(v_s, v_e, m):
                     p = self.evaluate_at(u, v)
                     fout.write(write_point(p))
                     indices, = np.where(p < p_min)
