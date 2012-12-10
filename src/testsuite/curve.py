@@ -78,7 +78,7 @@ class NURBSCurve(unittest.TestCase):
         #---- testing n + p + 1 != m ------------------------------------------
         desired = self.kwargs['degree'] = 3
         self.assertRaises(ValueError, ec.NURBSCurve, **self.kwargs)
-    
+
     def test_resize(self):
         curve = ec.NURBSCurve(shape=(5, 2), degree=2)
         np.testing.assert_equal(curve.ctrl_points.shape, (5, 2))
@@ -94,3 +94,15 @@ class NURBSCurve(unittest.TestCase):
         actual = curve.evaluate_at(1, homogeneous=True)
         desired = np.asarray([3.5, 3, 2.5])
         np.testing.assert_equal(actual, desired)
+
+    def test_merge_knots(self):
+        curve_original = ec.NURBSCurve(**self.kwargs)
+        curve_refined = ec.NURBSCurve(curve=curve_original)
+        desired = [0, 0, 0, 1, 2, 2, 3, 3, 3]
+        curve_refined.merge_knots(desired)
+        actual = curve_refined.knots
+        np.testing.assert_equal(actual, desired)
+        for u in np.linspace(0, 3, 10):
+            desired = curve_original.evaluate_at(u)
+            actual = curve_refined.evaluate_at(u)
+            np.testing.assert_array_almost_equal(actual, desired, 10)

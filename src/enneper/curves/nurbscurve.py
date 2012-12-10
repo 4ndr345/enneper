@@ -108,7 +108,41 @@ class NURBSCurve(object):
             self.refine_knots(knots_to_insert[:i])
 
     def refine_knots(self, knots):
-        raise NotImplementedError
+        m = self.knots.shape[0] - 1
+        n = self.ctrl_points.shape[0] - 1
+        p = self.degree
+        r = knots.shape[0] - 1
+        curve = NURBSCurve(curve=self)
+        self.resize((r + n + 2, self.ctrl_points.shape[1]), p)
+        a = efn.find_span(knots[0], curve.degree, curve.knots)
+        b = efn.find_span(knots[r], curve.degree, curve.knots) + 1
+        l, u = 0, a - p + 1
+        self.ctrl_points[l:u] = curve.ctrl_points[l:u]
+        l, u = b - 1, n + 1
+        self.ctrl_points[(l + r + 1):(u + r + 1)] = curve.ctrl_points[l:u]
+        l, u = 0, a + 1
+        self.knots[l:u] = curve.knots[l:u]
+        l, u = b + p, m + 1
+        self.knots[(l + r + 1):(u + r + 1)] = curve.knots[l:u]
+        i, k = b + p - 1, b + p + r
+        for j in range(r, -1, -1):
+            while knots[j] <= curve.knots[i] and i > a:
+                self.ctrl_points[k - p - 1] = curve.ctrl_points[i - p - 1]
+                self.knots[k] = curve.knots[i]
+                k, i = k - 1, i - 1
+            self.ctrl_points[k - p - 1] = self.ctrl_points[k - p]
+            for l in range(1, p + 1):
+                pre = k - p
+                ind = pre + 1
+                alpha = self.knots[k + l] - knots[j]
+                if abs(alpha) < 1e-7:
+                    self.ctrl_points[pre] = self.ctrl_points[ind]
+                else:
+                    alpha /= self.knots[k + l] - curve.knots[i - p + l]
+                self.ctrl_points[pre] *= alpha
+                self.ctrl_points[pre] += (1 - alpha) * self.ctrl_points[ind]
+            self.knots[k] = knots[j]
+            k -= 1
 
     def resize(self, shape, degree):
         self._ctrl_points = np.zeros(shape)
