@@ -23,6 +23,8 @@
 
 import numpy as np
 
+import foundation as fdn
+
 
 __all__ = ['Curve']
 
@@ -72,6 +74,22 @@ class Curve(object):
     @property
     def deg(self):
         return self._deg
+
+##############################################################################
+# miscellaneous methods
+##############################################################################
+
+    def evaluate_at(self, u, homogeneous=False):
+        span = fdn.nurbs.find_span(u, self.deg, self.knots)
+        n = fdn.nurbs.get_basis_functions(span, u, self.deg, self.knots)
+        point = np.zeros(self.ctrl_pnts.shape[1])
+        # todo: optimize loop: use np.sum and np.multiply
+        for i in xrange(self.deg + 1):
+            point += n[i] * self.ctrl_pnts[span - self.deg + i]
+        if homogeneous:
+            return point
+        point /= point[-1]
+        return point[0:-1]
 
     def resize(self, n, dim, deg):
         self._ctrl_pnts = np.zeros((n, dim))
