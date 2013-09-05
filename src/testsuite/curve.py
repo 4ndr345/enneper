@@ -39,14 +39,14 @@ class TestCurve(unittest.TestCase):
 
     def test_resize(self):
         curve = Curve()
-        curve.resize(n=N, dim=DIM, deg=DEG)
+        curve.resize(N, DIM, DEG)
         self.assertEqual(curve.ctrl_pnts.shape, (N, DIM))
         self.assertEqual(curve.knots.size, N + DEG + 1)
         self.assertEqual(curve.deg, DEG)
 
     def test_from_curve(self):
         original = Curve()
-        original.resize(n=N, dim=DIM, deg=DEG)
+        original.resize(N, DIM, DEG)
         original.ctrl_pnts[:] = CTRL_PNTS
         original.knots[:] = KNOTS
         copy = Curve.from_curve(original)
@@ -55,6 +55,12 @@ class TestCurve(unittest.TestCase):
         self.assertEqual(original.deg, copy.deg)
         self.assertIsNot(original.ctrl_pnts, copy.ctrl_pnts)
         self.assertIsNot(original.knots, copy.knots)
+
+    def test_from_parameters(self):
+        curve = Curve.from_parameters(CTRL_PNTS, KNOTS, DEG)
+        np.testing.assert_equal(curve.ctrl_pnts, CTRL_PNTS)
+        np.testing.assert_equal(curve.knots, KNOTS)
+        self.assertEqual(curve.deg, DEG)
 
 
 if __name__ == '__main__':
