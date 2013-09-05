@@ -36,6 +36,19 @@ class Curve(object):
         self._deg = None
 
 ##############################################################################
+# constructors
+##############################################################################
+
+    @classmethod
+    def from_curve(cls, curve):
+        copied_curve = cls()
+        n, dim = curve.ctrl_pnts.shape
+        copied_curve.resize(n=n, dim=dim, deg=curve.deg)
+        copied_curve.ctrl_pnts[:] = curve.ctrl_pnts
+        copied_curve.knots[:] = curve.knots
+        return copied_curve
+
+##############################################################################
 # properties
 ##############################################################################
 
@@ -55,4 +68,3 @@ class Curve(object):
         self._ctrl_pnts = np.zeros((n, dim))
         self._knots = np.zeros(n + deg + 1)
         self._deg = deg
-        

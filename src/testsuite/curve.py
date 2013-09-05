@@ -23,11 +23,15 @@
 
 import unittest
 
+import numpy as np
+
 from enneper.curve import Curve
 
 
 CTRL_PNTS = [[0, 0, 1], [4, 4, 4], [3, 2, 1], [4, 1, 1], [5, -1, 1]]
 KNOTS = [0, 0, 0, 1, 2, 3, 3, 3]
+DIM = len(CTRL_PNTS[0])
+N = len(CTRL_PNTS)
 DEG = 2
 
 
@@ -35,10 +39,22 @@ class TestCurve(unittest.TestCase):
 
     def test_resize(self):
         curve = Curve()
-        curve.resize(n=17, dim=4, deg=3)
-        self.assertEqual(curve.ctrl_pnts.shape, (17, 4))
-        self.assertEqual(curve.knots.size, 17+3+1)
-        self.assertEqual(curve.deg, 3)
+        curve.resize(n=N, dim=DIM, deg=DEG)
+        self.assertEqual(curve.ctrl_pnts.shape, (N, DIM))
+        self.assertEqual(curve.knots.size, N + DEG + 1)
+        self.assertEqual(curve.deg, DEG)
+
+    def test_from_curve(self):
+        original = Curve()
+        original.resize(n=N, dim=DIM, deg=DEG)
+        original.ctrl_pnts[:] = CTRL_PNTS
+        original.knots[:] = KNOTS
+        copy = Curve.from_curve(original)
+        np.testing.assert_equal(original.ctrl_pnts, copy.ctrl_pnts)
+        np.testing.assert_equal(original.knots, copy.knots)
+        self.assertEqual(original.deg, copy.deg)
+        self.assertIsNot(original.ctrl_pnts, copy.ctrl_pnts)
+        self.assertIsNot(original.knots, copy.knots)
 
 
 if __name__ == '__main__':
