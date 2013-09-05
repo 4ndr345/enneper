@@ -21,6 +21,9 @@
 # ***************************************************************************
 
 
+import numpy as np
+
+
 __all__ = ['Curve']
 
 
@@ -31,4 +34,19 @@ class Curve(object):
         self._ctrl_pnts = None
         self._knots = None
         self._deg = None
-        
+
+##############################################################################
+# properties
+##############################################################################
+
+    @property
+    def ctrl_pnts(self):
+        return self._ctrl_pnts
+
+    @property
+    def knots(self):
+        return self._knots
+
+    @property
+    def degree(self):
+        return self._deg
