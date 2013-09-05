@@ -48,5 +48,11 @@ class Curve(object):
         return self._knots
 
     @property
-    def degree(self):
+    def deg(self):
         return self._deg
+
+    def resize(self, n, dim, deg):
+        self._ctrl_pnts = np.zeros((n, dim))
+        self._knots = np.zeros(n + deg + 1)
+        self._deg = deg
+        

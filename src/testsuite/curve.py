@@ -23,9 +23,7 @@
 
 import unittest
 
-
-import enneper.curves as ec
-import numpy as np
+from enneper.curve import Curve
 
 
 CTRL_PNTS = [[0, 0, 1], [4, 4, 4], [3, 2, 1], [4, 1, 1], [5, -1, 1]]
@@ -33,8 +31,14 @@ KNOTS = [0, 0, 0, 1, 2, 3, 3, 3]
 DEG = 2
 
 
-class Curve(unittest.TestCase):
-    pass
+class TestCurve(unittest.TestCase):
+
+    def test_resize(self):
+        curve = Curve()
+        curve.resize(n=17, dim=4, deg=3)
+        self.assertEqual(curve.ctrl_pnts.shape, (17, 4))
+        self.assertEqual(curve.knots.size, 17+3+1)
+        self.assertEqual(curve.deg, 3)
 
 
 if __name__ == '__main__':
