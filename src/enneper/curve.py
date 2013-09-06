@@ -79,17 +79,12 @@ class Curve(object):
 # miscellaneous methods
 ##############################################################################
 
-    def evaluate_at(self, u, homogeneous=False):
-        span = fdn.nurbs.find_span(u, self.deg, self.knots)
-        n = fdn.nurbs.get_basis_functions(span, u, self.deg, self.knots)
-        point = np.zeros(self.ctrl_pnts.shape[1])
-        # todo: optimize loop: use np.sum and np.multiply
-        for i in xrange(self.deg + 1):
-            point += n[i] * self.ctrl_pnts[span - self.deg + i]
-        if homogeneous:
-            return point
-        point /= point[-1]
-        return point[0:-1]
+    def evaluate_at(self, u):
+        span = fdn.find_span(u, self.deg, self.knots)
+        basis_funcs = fdn.get_basis_funcs(span, u, self.deg, self.knots)
+        lb = span - self.deg
+        ub = span + 1
+        return np.sum(self.ctrl_pnts[lb:ub] * basis_funcs[:, None], 0)
 
     def resize(self, n, dim, deg):
         self._ctrl_pnts = np.zeros((n, dim))

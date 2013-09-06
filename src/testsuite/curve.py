@@ -65,9 +65,6 @@ class TestCurve(unittest.TestCase):
     def test_evaluate_at(self):
         curve = Curve.from_parameters(CTRL_PNTS, KNOTS, DEG)
         actual = curve.evaluate_at(1)
-        desired = np.asarray([1.4, 1.2])
-        np.testing.assert_equal(actual, desired)
-        actual = curve.evaluate_at(1, homogeneous=True)
         desired = np.asarray([3.5, 3, 2.5])
         np.testing.assert_equal(actual, desired)
 
