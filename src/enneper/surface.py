@@ -21,6 +21,11 @@
 # ***************************************************************************
 
 
+import numpy as np
+
+import foundation as fdn
+
+
 class Surface(object):
 
     def __init__(self):
@@ -53,7 +58,7 @@ class Surface(object):
         surface.ctrl_pnts[:] = ctrl_pnts
         surface.knots_u[:] = knots_u
         surface.knots_v[:] = knots_v
-        return curve
+        return surface
 
 ###############################################################################
 # properties
