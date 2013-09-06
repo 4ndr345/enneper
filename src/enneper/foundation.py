@@ -34,21 +34,21 @@ def find_span(u, degree, knots):
     return np.where(knots[low:high] <= u)[0][-1] + degree
 
 
-def get_basis_functions(i, u, degree, knots):
+def get_basis_functions(i, u, deg, knots):
     """ Computes the nonvanishing basis functions"""
-    basis_func = np.ones(degree + 1)
-    left = np.ones(degree + 1)
-    right = np.ones(degree + 1)
-    for j in range(1, degree + 1):
+    basis_funcs = np.ones(deg + 1)
+    left = np.ones(deg + 1)
+    right = np.ones(deg + 1)
+    for j in range(1, deg + 1):
         left[j] = u - knots[i + 1 - j]
         right[j] = knots[i + j] - u
         cache = 0
         for k in range(j):
-            tmp = basis_func[k] / (right[k + 1] + left[j - k])
-            basis_func[k] = cache + right[k + 1] * tmp
+            tmp = basis_funcs[k] / (right[k + 1] + left[j - k])
+            basis_funcs[k] = cache + right[k + 1] * tmp
             cache = left[j - k] * tmp
-        basis_func[j] = cache
-    return basis_func
+        basis_funcs[j] = cache
+    return basis_funcs
 
 
 def get_cartesian_points(h_pnts):
