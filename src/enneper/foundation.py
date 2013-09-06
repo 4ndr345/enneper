@@ -34,7 +34,7 @@ def find_span(u, degree, knots):
     return np.where(knots[low:high] <= u)[0][-1] + degree
 
 
-def get_basis_functions(i, u, deg, knots):
+def get_basis_funcs(i, u, deg, knots):
     """ Computes the nonvanishing basis functions"""
     basis_funcs = np.ones(deg + 1)
     left = np.ones(deg + 1)
