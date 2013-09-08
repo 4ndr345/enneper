@@ -22,6 +22,7 @@
 
 
 import numpy as np
+import vtk
 
 import foundation as fdn
 
@@ -94,6 +95,22 @@ class Surface(object):
         self._knots_v = np.zeros(n_v + deg_v + 1)
         self._deg_u = deg_u
         self._deg_v = deg_v
+
+    def export_as_vts(self, fname, n_u=20, n_v=20):
+        fname = fname if fname[-4:] == '.vts' else ''.join((fname, '.vts'))
+        sgrid = vtk.vtkStructuredGrid()
+        sgrid.SetDimensions(n_u, n_v, 1)
+        pnts = vtk.vtkPoints()
+        pnts.SetNumberOfPoints(n_u * n_v)
+        for i, u in enumerate(np.linspace(0, 1, n_u)):
+            for j, v in enumerate(np.linspace(0, 1, n_v)):
+                x, y, z, w = self.evaluate_at(u, v)
+                pnts.SetPoint(j * n_u + i, (x / w, y / w, z / w))
+        sgrid.SetPoints(pnts)
+        writer = vtk.vtkXMLStructuredGridWriter()
+        writer.SetFileName(fname)
+        writer.SetInput(sgrid)
+        writer.Write()
 
     def evaluate_at(self, u, v):
         deg_u, deg_v = self._deg_u, self._deg_v
