@@ -97,6 +97,9 @@ class Surface(object):
         self._deg_v = deg_v
 
     def export_as_vts(self, fname, n_u=20, n_v=20):
+        ensure_4d = lambda pnt: pnt
+        if self.ctrl_pnts.shape[1] == 3:
+            ensure_4d = lambda pnt: pnt[0], pnt[1], 0, pnt[2]
         fname = fname if fname[-4:] == '.vts' else ''.join((fname, '.vts'))
         sgrid = vtk.vtkStructuredGrid()
         sgrid.SetDimensions(n_u, n_v, 1)
@@ -104,7 +107,8 @@ class Surface(object):
         pnts.SetNumberOfPoints(n_u * n_v)
         for i, u in enumerate(np.linspace(0, 1, n_u)):
             for j, v in enumerate(np.linspace(0, 1, n_v)):
-                x, y, z, w = self.evaluate_at(u, v)
+                pnt = ensure_4d(self.evaluate_at(u, v))
+                x, y, z, w = pnt
                 pnts.SetPoint(j * n_u + i, (x / w, y / w, z / w))
         sgrid.SetPoints(pnts)
         writer = vtk.vtkXMLStructuredGridWriter()
