@@ -27,6 +27,7 @@ import numpy as np
 
 from enneper.curve import Curve
 
+
 # The NURBS Book 2nd edition: example 4.1 (page 122 ff.)
 CTRL_PNTS = [[0, 0, 1], [4, 4, 4], [3, 2, 1], [4, 1, 1], [5, -1, 1]]
 KNOTS = [0, 0, 0, 1, 2, 3, 3, 3]
@@ -57,13 +58,13 @@ class TestCurve(unittest.TestCase):
         self.assertIsNot(original.knots, copy.knots)
 
     def test_from_parameters(self):
-        curve = Curve.from_parameters(CTRL_PNTS, KNOTS, DEG)
+        curve = Curve.from_ctrl_pnts_knots_and_deg(CTRL_PNTS, KNOTS, DEG)
         np.testing.assert_equal(curve.ctrl_pnts, CTRL_PNTS)
         np.testing.assert_equal(curve.knots, KNOTS)
         self.assertEqual(curve.deg, DEG)
 
     def test_evaluate_at(self):
-        curve = Curve.from_parameters(CTRL_PNTS, KNOTS, DEG)
+        curve = Curve.from_ctrl_pnts_knots_and_deg(CTRL_PNTS, KNOTS, DEG)
         actual = curve.evaluate_at(1)
         desired = np.asarray([3.5, 3, 2.5])
         np.testing.assert_equal(actual, desired)

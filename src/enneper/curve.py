@@ -51,7 +51,7 @@ class Curve(object):
         return copied_curve
 
     @classmethod
-    def from_parameters(cls, ctrl_pnts, knots, deg):
+    def from_ctrl_pnts_knots_and_deg(cls, ctrl_pnts, knots, deg):
         curve = cls()
         n, dim = np.asarray(ctrl_pnts).shape
         curve.resize(n, dim, deg)
