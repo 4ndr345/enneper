@@ -59,13 +59,9 @@ def get_cartesian_points(h_pnts):
     return coords.transpose().reshape(*shape)
 
 
-def get_homogeneous_points(pnts, weights):
-    shape = list(pnts.shape)
-    coords = pnts.reshape(-1, shape[-1]).transpose()
-    weights = weights.reshape(-1)
-    h_coords = np.vstack((np.multiply(coords, weights), weights))
-    shape[-1] += 1
-    return h_coords.transpose().reshape(*shape)
+def get_h_pnt(pnts, weights):
+    return np.hstack((pnts * weights[:, None], weights))
+ 
 
 
 def intersect_lines(pos_v, dir_v):
