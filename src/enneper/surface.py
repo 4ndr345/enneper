@@ -21,6 +21,9 @@
 # ***************************************************************************
 
 
+from __future__ import division
+import itertools
+
 import numpy as np
 import vtk
 
@@ -105,11 +108,10 @@ class Surface(object):
         sgrid.SetDimensions(n_u, n_v, 1)
         pnts = vtk.vtkPoints()
         pnts.SetNumberOfPoints(n_u * n_v)
-        for i, u in enumerate(np.linspace(0, 1, n_u)):
-            for j, v in enumerate(np.linspace(0, 1, n_v)):
-                pnt = ensure_4d(self.evaluate_at(u, v))
-                x, y, z, w = pnt
-                pnts.SetPoint(j * n_u + i, (x / w, y / w, z / w))
+        gen_u, gen_v = fdn.linspace(0, 1, n_u), fdn.linspace(0, 1, n_v)
+        for i, (u, v) in enumerate(itertools.product(gen_u, gen_v)):
+            x, y, z, w = ensure_4d(self.evaluate_at(u, v))
+            pnts.SetPoint(i, (x / w, y / w, z / w))
         sgrid.SetPoints(pnts)
         writer = vtk.vtkXMLStructuredGridWriter()
         writer.SetFileName(fname)
@@ -125,7 +127,7 @@ class Surface(object):
         span_v = fdn.find_span(v, deg_v, knots_v)
         basis_funcs_v = fdn.get_basis_funcs(span_v, v, deg_v, knots_v)
         basis_funcs_v = basis_funcs_v[:, None]
-        lb_u, ub_u = span_u - self.deg_u, span_u + 1
-        lb_v, ub_v = span_v - self.deg_v,  span_v + 1
-        tmp = np.sum(self.ctrl_pnts[lb_u:ub_u, lb_v:ub_v] * basis_funcs_u, 0)
+        lb_u, ub_u = span_u - deg_u, span_u + 1
+        lb_v, ub_v = span_v - deg_v,  span_v + 1
+        tmp = np.sum(self._ctrl_pnts[lb_u:ub_u, lb_v:ub_v] * basis_funcs_u, 0)
         return np.sum(tmp * basis_funcs_v, 0)
