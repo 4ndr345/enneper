@@ -24,6 +24,7 @@
 import numpy as np
 
 import foundation as fdn
+import foundation_cython as cfdn
 
 
 class Surface(object):
@@ -99,10 +100,13 @@ class Surface(object):
         deg_u, deg_v = self._deg_u, self._deg_v
         knots_u, knots_v = self._knots_u, self._knots_v
         span_u = fdn.find_span(u, deg_u, knots_u)
+        print span_u, u, deg_u, knots_u
         basis_funcs_u = fdn.get_basis_funcs(span_u, u, deg_u, knots_u)
+        #basis_funcs_u = np.asarray(cfdn.get_basis_funcs(span_u, u, deg_u, knots_u))
         basis_funcs_u = basis_funcs_u[:, None, None]
         span_v = fdn.find_span(v, deg_v, knots_v)
         basis_funcs_v = fdn.get_basis_funcs(span_v, v, deg_v, knots_v)
+        #basis_funcs_v = np.asarray(cfdn.get_basis_funcs(span_v, v, deg_v, knots_v))
         basis_funcs_v = basis_funcs_v[:, None]
         lb_u, ub_u = span_u - self.deg_u, span_u + 1
         lb_v, ub_v = span_v - self.deg_v,  span_v + 1

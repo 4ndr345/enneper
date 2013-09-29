@@ -22,6 +22,20 @@
 
 from setuptools import setup
 
+from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Distutils import build_ext
+
+extra_args = []
+# Comment/Uncomment the following line to disable/enable OpenMP for GCC-ish
+# compilers.
+extra_args = ["-fopenmp"]
+
+exts = [Extension("foundation_cython", 
+                  ["src/enneper/foundation.pyx"],
+                  extra_compile_args=extra_args,
+                  extra_link_args=extra_args)
+        ]
 
 setup(name='enneper',
       version='0.1dev',
@@ -29,6 +43,8 @@ setup(name='enneper',
       author='Andreas Kührmann',
       author_email='andreas.kuehrmann@gmail.com',
       packages=['enneper'],
-      package_dir={'': 'src'},
-      install_requires=['numpy >= 1.5.1']
+      package_dir={'': 'src/enneper'},
+      install_requires=['numpy >= 1.5.1'],
+      cmdclass = {'build_ext': build_ext},
+      ext_modules = exts
       )
