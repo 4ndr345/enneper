@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ***************************************************************************
-# *   Copyright (C) 2012 by Andreas Kührmann [andreas.kuehrmann@gmail.com]  *
+# *   Copyright (C) 2013 by Andreas Kührmann [andreas.kuehrmann@gmail.com]  *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU General Public License as published by  *
@@ -24,6 +24,7 @@
 import numpy as np
 
 import foundation as fdn
+import cfoundation as cfdn
 
 
 __all__ = ['Curve']
@@ -31,11 +32,15 @@ __all__ = ['Curve']
 
 class Curve(object):
 
-    def __init__(self):
+    def __init__(self, ctrl_pnts, knots, deg):
         """designated initializer"""
-        self._ctrl_pnts = None
-        self._knots = None
-        self._deg = None
+
+        if len(ctrl_pnts) + deg + 1 != len(knots):
+            raise fdn.NURBSException(len(ctrl_pnts), len(knots), deg)
+
+        self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
+        self._knots = np.asarray(knots, dtype=np.double)
+        self._deg = deg
 
 ###############################################################################
 # constructors
@@ -43,21 +48,10 @@ class Curve(object):
 
     @classmethod
     def from_curve(cls, curve):
-        copied_curve = cls()
-        n, dim = curve.ctrl_pnts.shape
-        copied_curve.resize(n, dim, curve.deg)
-        copied_curve.ctrl_pnts[:] = curve.ctrl_pnts
-        copied_curve.knots[:] = curve.knots
-        return copied_curve
-
-    @classmethod
-    def from_ctrl_pnts_knots_and_deg(cls, ctrl_pnts, knots, deg):
-        curve = cls()
-        n, dim = np.asarray(ctrl_pnts).shape
-        curve.resize(n, dim, deg)
-        curve.ctrl_pnts[:] = ctrl_pnts
-        curve.knots[:] = knots
-        return curve
+        ctrl_pnts = curve.ctrl_pnts.copy()
+        knots = curve.knots.copy()
+        deg = curve.deg
+        return cls(ctrl_pnts, knots, deg)
 
 ###############################################################################
 # properties
@@ -80,12 +74,12 @@ class Curve(object):
 ###############################################################################
 
     def evaluate_at(self, u):
-        span = fdn.find_span(u, self.deg, self.knots)
-        basis_funcs = fdn.get_basis_funcs(span, u, self.deg, self.knots)
-        lb, ub = span - self.deg, span + 1
-        return np.sum(self.ctrl_pnts[lb:ub] * basis_funcs[:, None], 0)
+        knots = self.knots
+        deg = self.deg
 
-    def resize(self, n, dim, deg):
-        self._ctrl_pnts = np.zeros((n, dim))
-        self._knots = np.zeros(n + deg + 1)
-        self._deg = deg
+        index = cfdn.get_index(u, deg, knots)
+        basis_funs = np.empty((deg + 1, 1), dtype=np.double)
+        cfdn.calc_basis_funs(index, u, deg, knots, basis_funs[:, 0])
+
+        lb, ub = index - deg, index + 1
+        return np.sum(self.ctrl_pnts[lb:ub] * basis_funs, 0)

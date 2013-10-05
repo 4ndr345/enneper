@@ -21,39 +21,48 @@
 # ***************************************************************************
 
 
+import os
 import unittest
 
 import numpy as np
 
-import enneper.curve as enneper
+import enneper.surface as enneper
 
 
-# The NURBS Book 2nd edition: example 4.1 (page 122 ff.)
-CTRL_PNTS = [[0, 0, 1], [4, 4, 4], [3, 2, 1], [4, 1, 1], [5, -1, 1]]
-KNOTS = [0, 0, 0, 1, 2, 3, 3, 3]
-DEG = 2
+DIR = os.path.join(os.path.dirname(__file__), 'sphere')
+
+CTRL_PNTS = np.fromfile(os.path.join(DIR, 'ctrl_pnts')).reshape(-1, 5, 4)
+KNOTS_U = np.fromfile(os.path.join(DIR, 'knots_u'))
+KNOTS_V = np.fromfile(os.path.join(DIR, 'knots_v'))
+DEG_U = 2
+DEG_V = 2
 
 
 class TestCurve(unittest.TestCase):
 
     def test_designated_initializer(self):
-        curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
-        np.testing.assert_equal(curve.ctrl_pnts, CTRL_PNTS)
-        np.testing.assert_equal(curve.knots, KNOTS)
-        self.assertEqual(curve.deg, DEG)
+        surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
+        np.testing.assert_equal(surface.ctrl_pnts, CTRL_PNTS)
+        np.testing.assert_equal(surface.knots_u, KNOTS_U)
+        np.testing.assert_equal(surface.knots_v, KNOTS_V)
+        self.assertEqual(surface.deg_u, DEG_U)
+        self.assertEqual(surface.deg_v, DEG_V)
 
-    def testfrom_curve_constructor(self):
-        original = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
-        copy = enneper.Curve.from_curve(original)
+    def test_from_surface_constructor(self):
+        original = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
+        copy = enneper.Surface.from_surface(original)
         np.testing.assert_equal(original.ctrl_pnts, copy.ctrl_pnts)
-        np.testing.assert_equal(original.knots, copy.knots)
-        self.assertEqual(original.deg, copy.deg)
+        np.testing.assert_equal(original.knots_u, copy.knots_u)
+        np.testing.assert_equal(original.knots_v, copy.knots_v)
+        self.assertEqual(original.deg_u, copy.deg_u)
+        self.assertEqual(original.deg_v, copy.deg_v)
         self.assertIsNot(original.ctrl_pnts, copy.ctrl_pnts)
-        self.assertIsNot(original.knots, copy.knots)
+        self.assertIsNot(original.knots_u, copy.knots_u)
+        self.assertIsNot(original.knots_v, copy.knots_v)
 
     def test_evaluate_at(self):
-        curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
-        np.testing.assert_equal(curve.evaluate_at(1), [3.5, 3., 2.5])
+        surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
+        np.testing.assert_equal(surface.evaluate_at(0, 0), [ 0.,  0.,  1.,  1.])
 
 
 if __name__ == '__main__':
