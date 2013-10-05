@@ -1,7 +1,14 @@
 *.py[cod]
 
+# documentation
+*.html
+
+# shell scripts
+*.sh
+
 # C extensions
 *.so
+*.c
 
 # Packages
 *.egg
