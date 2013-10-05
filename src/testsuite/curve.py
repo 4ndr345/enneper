@@ -55,6 +55,11 @@ class TestCurve(unittest.TestCase):
         curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
         np.testing.assert_equal(curve.evaluate_at(1), [3.5, 3., 2.5])
 
+    def test_json(self):
+        curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
+        curve.export_json('test.json')
+        curve.import_json('test.json')
+
 
 if __name__ == '__main__':
     unittest.main()

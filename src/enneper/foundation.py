@@ -26,7 +26,7 @@ import textwrap
 import numpy as np
 
 
-class NURBSException(Exception):
+class NURBSError(Exception):
     
     def __init__(self, ctrl_pnts_count, knots_count, deg):
         self.ctrl_pnts_count = ctrl_pnts_count
@@ -41,6 +41,11 @@ class NURBSException(Exception):
               ({0} + {2} + 1 == {3} != {1})
               """.format(self.ctrl_pnts_count, target, self.deg, actual)
         return repr(textwrap.dedent(msg).replace('\n', ' ', 2).replace('\n', ''))
+
+
+def check_nurbs_condition(ctrl_pnts_count, knots_count, deg):
+    if ctrl_pnts_count + deg + 1 != knots_count:
+        raise NURBSError(ctrl_pnts_count, knots_count, deg)
 
 
 def get_cartesian_points(h_pnts):
