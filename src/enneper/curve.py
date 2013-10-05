@@ -49,10 +49,18 @@ class Curve(object):
 
     @classmethod
     def from_curve(cls, curve):
-        ctrl_pnts = curve.ctrl_pnts.copy()
-        knots = curve.knots.copy()
-        deg = curve.deg
-        return cls(ctrl_pnts, knots, deg)
+        return cls(curve.ctrl_pnts.copy(), curve.knots.copy(), curve.deg)
+
+    @classmethod
+    def from_json(cls, filename):
+
+        if filename[-5:] != '.json':
+            filename = ''.join((filename, '.json'))
+
+        with open(filename, 'r') as open_file:
+            data = json.load(open_file)
+
+        return cls(data['ctrl_pnts'], data['knots'], data['deg'])
 
 ###############################################################################
 # properties
@@ -75,6 +83,7 @@ class Curve(object):
 ###############################################################################
 
     def evaluate_at(self, u):
+
         knots = self.knots
         deg = self.deg
 
@@ -90,33 +99,33 @@ class Curve(object):
 ###############################################################################
 
     def export_json(self, filename, verbose=False):
-        
+
         if filename[-5:] != '.json':
             filename = ''.join((filename, '.json'))
-        
+
         ctrl_pnts = self.ctrl_pnts.tolist()
         knots = self.knots.tolist()
-        
+
         data = {'ctrl_pnts': ctrl_pnts, 'knots': knots, 'deg':self.deg}
-        
+
         with open(filename, 'w') as open_file:
             indent = 4 if verbose else None
             json.dump(data, open_file, indent=indent)
 
     def import_json(self, filename):
-        
+
         if filename[-5:] != '.json':
             filename = ''.join((filename, '.json'))
-        
+
         with open(filename, 'r') as open_file:
             data = json.load(open_file)
-        
+
         ctrl_pnts = data['ctrl_pnts']
         knots = data['knots']
         deg = data['deg']
-        
+
         fdn.check_nurbs_condition(len(ctrl_pnts), len(knots), deg)
-        
+
         self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
         self._knots = np.asarray(knots, dtype=np.double)
         self._deg = deg
