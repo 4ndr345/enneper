@@ -29,9 +29,11 @@ import numpy as np
 import enneper.surface as enneper
 
 
-CTRL_PNTS = np.fromfile(os.path.join('sphere', 'ctrl_pnts')).reshape(-1, 5, 4)
-KNOTS_U = np.fromfile(os.path.join('sphere', 'knots_u'))
-KNOTS_V = np.fromfile(os.path.join('sphere', 'knots_v'))
+DIR = os.path.join(os.path.dirname(__file__), 'sphere')
+
+CTRL_PNTS = np.fromfile(os.path.join(DIR, 'ctrl_pnts')).reshape(-1, 5, 4)
+KNOTS_U = np.fromfile(os.path.join(DIR, 'knots_u'))
+KNOTS_V = np.fromfile(os.path.join(DIR, 'knots_v'))
 DEG_U = 2
 DEG_V = 2
 
@@ -60,7 +62,7 @@ class TestCurve(unittest.TestCase):
 
     def test_evaluate_at(self):
         surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
-        np.testing.assert_array_equal(surface.evaluate_at(0, 0), [0])
+        np.testing.assert_array_equal(surface.evaluate_at(0, 0), [ 0.,  0.,  1.,  1.])
 
 
 if __name__ == '__main__':

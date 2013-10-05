@@ -57,7 +57,7 @@ def find_span(int n, int p, double u, ndarray[double] U):
     ###########################################################################
     low, high = p, n
     mid = (low + high) / 2
-    while U[mid] > u >= U[mid + 1]:
+    while u < U[mid] or u >= U[mid + 1]:
         if u < U[mid]:
             high = mid
         else:
