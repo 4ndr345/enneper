@@ -26,11 +26,10 @@ TODO
     * profile surfaces
         * monorail
         * birail
-    * surface of revolution
+    * surface of revoluti~on
 * OpenGL support
-* VTK support
-* write low level NURBS function in c or cython
-
+* VTK support?
+* ~~write low level NURBS function in c or cython~~
 
 License
 =======
