@@ -24,7 +24,7 @@
 import numpy as np
 
 import foundation as fdn
-import foundation_cython as cfdn
+import cfoundation as cfdn
 
 
 class Surface(object):
@@ -37,7 +37,7 @@ class Surface(object):
             raise fdn.NURBSException(len(ctrl_pnts[0]), len(knots_v), deg_v)
         self._ctrl_pnts = np.asarray(ctrl_pnts)
         self._knots_u = np.asarray(knots_u)
-        self._knots_u = np.asarray(knots_v)
+        self._knots_v = np.asarray(knots_v)
         self._deg_u = deg_u
         self._deg_v = deg_v
 
@@ -96,7 +96,7 @@ class Surface(object):
         span_u = cfdn.find_span(ctrl_pnts.shape[0], deg_u, u, knots_u)
         basis_funs_u = np.empty((deg_u + 1, 1, 1), dtype=np.double)
         cfdn.basis_funs(span_u, u, deg_u, knots_u, basis_funs_u[:, 0, 0])
-        span_v = fdn.find_span(ctrl_pnts.shape[1], deg_v, v, knots_v)
+        span_v = cfdn.find_span(ctrl_pnts.shape[1], deg_v, v, knots_v)
         basis_funs_v = np.empty((deg_v + 1, 1), dtype=np.double)
         cfdn.basis_funs(span_v, v, deg_v, knots_v, basis_funs_v[:, 0])
         lb_u, ub_u = span_u - deg_u, span_u + 1
