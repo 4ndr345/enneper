@@ -21,53 +21,82 @@
 # ***************************************************************************
 
 
-import numpy as np
+###############################################################################
+# Cython cimports
+###############################################################################
 
 cimport cython
 from libc.stdlib cimport malloc, free
+from numpy cimport ndarray
 
-def find_span(u, deg, knots):
-    """Determine the knot span index"""
-    lb, ub = deg, knots.size - deg
-    # Special case
-    if u == knots[ub - 1]:
-        return ub - 2
-    # search
-    return np.where(knots[lb:ub] <= u)[0][-1] + deg
 
+###############################################################################
+# python function
+###############################################################################
+
+@cython.boundscheck(False)
+@cython.cdivision(True)
+def find_span(int n, int p, double u, ndarray[double] U):
+    """
+    Determine the knot span index
+    INPUT: n, p, u, U
+    Return: the knot span index
+    """
+    ###########################################################################
+    # define types 
+    ###########################################################################
+    cdef:
+        int low, high, mid
+    ###########################################################################
+    # handle special case
+    ###########################################################################
+    if u == U[n]:
+        return n - 1
+    ###########################################################################
+    # do binary search
+    ###########################################################################
+    low, high = p, n
+    mid = (low + high) / 2
+    while U[mid] > u >= U[mid + 1]:
+        if u < U[mid]:
+            high = mid
+        else:
+            low = mid
+        mid = (low + high) / 2
+    return mid
 
 
 @cython.boundscheck(False)
-def get_basis_funcs(int i, double u, int p, double[::1] U):
-    
+@cython.cdivision(True)
+def basis_funs(int i, double u, int p, ndarray[double] U, ndarray[double] N):
+    """
+    Computes the nonvanishing basis functions.
+    INPUT: i, u, p, U
+    OUTPUT: N
+    """
+    ###########################################################################
+    # define types and allocate memory for c arrays
+    ###########################################################################
     cdef:
-        int j, r, n
-        float saved, temp
-        double[::1] N
-        double *left
-        double *right
-    
-    n = p + 1
-    
-    N = np.empty(n, dtype=np.float64)
-    # TODO: maybe use c array
-    left = <double *>malloc(n*cython.sizeof(double))
-    right = <double *>malloc(n*cython.sizeof(double))
-    
+        int j, r, n = p + 1
+        double saved, temp
+        double *left = <double *> malloc(n * cython.sizeof(double))
+        double *right = <double *> malloc(n * cython.sizeof(double))
+    ###########################################################################
+    # calculate basis functions
+    ###########################################################################
     N[0] = 1
-    
-    for j in range(1, n):
-        left[j] = u - U[i + 1 -j]
+    for j in xrange(1, n):
+        left[j] = u - U[i + 1 - j]
         right[j] = U[i + j] - u
         saved = 0
-        for r in range(j):
+        for r in xrange(j):
             temp = N[r] / (right[r + 1] + left[j - r])
             N[r] = saved + right[r + 1] * temp
             saved = left[j - r] * temp
         N[j] = saved
-    
+    ###########################################################################
+    # release memory
+    ###########################################################################
     free(left)
     free(right)
-    
-    return np.asarray(N)
-        

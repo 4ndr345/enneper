@@ -21,34 +21,26 @@
 # ***************************************************************************
 
 
+import textwrap
+
 import numpy as np
 
 
-def find_span(u, deg, knots):
-    """Determine the knot span index"""
-    lb, ub = deg, knots.size - deg
-    # Special case
-    if u == knots[ub - 1]:
-        return ub - 2
-    # search
-    return np.where(knots[lb:ub] <= u)[0][-1] + deg
-
-
-def get_basis_funcs(i, u, deg, knots):
-    """ Computes the nonvanishing basis functions"""
-    basis_funcs = np.ones(deg + 1)
-    left = np.ones(deg + 1)
-    right = np.ones(deg + 1)
-    for j in range(1, deg + 1):
-        left[j] = u - knots[i + 1 - j]
-        right[j] = knots[i + j] - u
-        cache = 0
-        for k in range(j):
-            tmp = basis_funcs[k] / (right[k + 1] + left[j - k])
-            basis_funcs[k] = cache + right[k + 1] * tmp
-            cache = left[j - k] * tmp
-        basis_funcs[j] = cache
-    return basis_funcs
+class NURBSException(Exception):
+    
+    def __init__(self, ctrl_pnts_count, knots_count, deg):
+        self.ctrl_pnts_count = ctrl_pnts_count
+        self.knots_count = knots_count
+        self.deg = deg
+    
+    def __str__(self):
+        actual, target = self.ctrl_pnts_count + self.deg + 1, self.knots_count
+        msg = """\
+              The number of control points (= {0}), the number of
+              knots (= {1}) and the degree (= {2}) aren't compatible.
+              ({0} + {2} + 1 == {3} != {1})
+              """.format(self.ctrl_pnts_count, target, self.deg, actual)
+        return repr(textwrap.dedent(msg).replace('\n', ' ', 2).replace('\n', ''))
 
 
 def get_cartesian_points(h_pnts):

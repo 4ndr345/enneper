@@ -24,6 +24,8 @@
 import numpy as np
 
 import foundation as fdn
+import foundation_cython as cfdn
+
 
 
 __all__ = ['Curve']
@@ -31,11 +33,13 @@ __all__ = ['Curve']
 
 class Curve(object):
 
-    def __init__(self):
+    def __init__(self, ctrl_pnts, knots, deg):
         """designated initializer"""
-        self._ctrl_pnts = None
-        self._knots = None
-        self._deg = None
+        if len(ctrl_pnts) + deg + 1 != len(knots):
+            raise fdn.NURBSException(len(ctrl_pnts), len(knots), deg)
+        self._ctrl_pnts = np.asarray(ctrl_pnts)
+        self._knots = np.asarray(knots)
+        self._deg = deg
 
 ###############################################################################
 # constructors
@@ -49,15 +53,6 @@ class Curve(object):
         copied_curve.ctrl_pnts[:] = curve.ctrl_pnts
         copied_curve.knots[:] = curve.knots
         return copied_curve
-
-    @classmethod
-    def from_ctrl_pnts_knots_and_deg(cls, ctrl_pnts, knots, deg):
-        curve = cls()
-        n, dim = np.asarray(ctrl_pnts).shape
-        curve.resize(n, dim, deg)
-        curve.ctrl_pnts[:] = ctrl_pnts
-        curve.knots[:] = knots
-        return curve
 
 ###############################################################################
 # properties
@@ -80,10 +75,12 @@ class Curve(object):
 ###############################################################################
 
     def evaluate_at(self, u):
-        span = fdn.find_span(u, self.deg, self.knots)
-        basis_funcs = fdn.get_basis_funcs(span, u, self.deg, self.knots)
-        lb, ub = span - self.deg, span + 1
-        return np.sum(self.ctrl_pnts[lb:ub] * basis_funcs[:, None], 0)
+        deg, knots, ctrl_pnts = self.deg, self.knots, self.ctrl_pnts
+        span = cfdn.find_span(ctrl_pnts.shape[0], deg, u, knots)
+        basis_funs = np.empty((deg + 1, 1), dtype=np.double)
+        cfdn.basis_funs(span, u, deg, knots, basis_funs[:, 0])
+        lb, ub = span - deg, span + 1
+        return np.sum(ctrl_pnts[lb:ub] * basis_funs, 0)
 
     def resize(self, n, dim, deg):
         self._ctrl_pnts = np.zeros((n, dim))
