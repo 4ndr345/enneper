@@ -29,8 +29,6 @@ import numpy as np
 import enneper.curve as enneper
 
 
-DIR = os.path.join(os.path.dirname(__file__))
-
 # The NURBS Book 2nd edition: example 4.1 (page 122 ff.)
 CTRL_PNTS = [[0, 0, 1], [4, 4, 4], [3, 2, 1], [4, 1, 1], [5, -1, 1]]
 KNOTS = [0, 0, 0, 1, 2, 3, 3, 3]
@@ -55,7 +53,8 @@ class TestCurve(unittest.TestCase):
         self.assertIsNot(original.knots, copy.knots)
 
     def test_from_json_constructor(self):
-        curve = enneper.Curve.from_json(os.path.join(DIR, 'curve.json'))
+        filename = os.path.join(os.path.dirname(__file__), 'curve.json')
+        curve = enneper.Curve.from_json(filename)
         np.testing.assert_equal(curve.ctrl_pnts, CTRL_PNTS)
         np.testing.assert_equal(curve.knots, KNOTS)
         self.assertEqual(curve.deg, DEG)

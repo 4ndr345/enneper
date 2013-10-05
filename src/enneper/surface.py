@@ -21,6 +21,8 @@
 # ***************************************************************************
 
 
+import json
+
 import numpy as np
 
 import foundation as fdn
@@ -35,11 +37,8 @@ class Surface(object):
     def __init__(self, ctrl_pnts, knots_u, knots_v, deg_u, deg_v):
         """designated initializer"""
 
-        if len(ctrl_pnts) + deg_u + 1 != len(knots_u):
-            raise fdn.NURBSException(len(ctrl_pnts), len(knots_u), deg_u)
-
-        if len(ctrl_pnts[0]) + deg_v + 1 != len(knots_v):
-            raise fdn.NURBSException(len(ctrl_pnts[0]), len(knots_v), deg_v)
+        fdn.check_nurbs_condition(len(ctrl_pnts), len(knots_u), deg_u)
+        fdn.check_nurbs_condition(len(ctrl_pnts[0]), len(knots_v), deg_v)
 
         self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
         self._knots_u = np.asarray(knots_u, dtype=np.double)
@@ -53,11 +52,30 @@ class Surface(object):
 
     @classmethod
     def from_surface(cls, surface):
+
         ctrl_pnts = surface.ctrl_pnts.copy()
         knots_u = surface.knots_u.copy()
         knots_v = surface.knots_v.copy()
         deg_u = surface.deg_u
         deg_v = surface.deg_v
+
+        return cls(ctrl_pnts, knots_u, knots_v, deg_u, deg_v)
+
+    @classmethod
+    def from_json(cls, filename):
+        
+        if filename[-5:] != '.json':
+            filename = ''.join((filename, '.json'))
+
+        with open(filename, 'r') as open_file:
+            data = json.load(open_file)
+
+        ctrl_pnts = data['ctrl_pnts']
+        knots_u = data['knots_u']
+        knots_v = data['knots_v']
+        deg_u = data['deg_u']
+        deg_v = data['deg_v']
+
         return cls(ctrl_pnts, knots_u, knots_v, deg_u, deg_v)
 
 ###############################################################################
@@ -104,3 +122,46 @@ class Surface(object):
         lb_v, ub_v = index_v - deg_v, index_v + 1
         tmp = np.sum(self.ctrl_pnts[lb_u:ub_u, lb_v:ub_v] * basis_funs_u, 0)
         return np.sum(tmp * basis_funs_v, 0)
+
+###############################################################################
+# i/o methods
+###############################################################################
+
+    def export_json(self, filename, verbose=False):
+
+        if filename[-5:] != '.json':
+            filename = ''.join((filename, '.json'))
+
+        data = dict()
+        data['ctrl_pnts'] = self.ctrl_pnts.tolist()
+        data['knots_u'] =  self.knots_u.tolist()
+        data['knots_v'] =  self.knots_v.tolist()
+        data['deg_u'] = self.deg_u
+        data['deg_v'] = self.deg_v
+
+        with open(filename, 'w') as open_file:
+            indent = 2 if verbose else None
+            json.dump(data, open_file, indent=indent)
+
+    def import_json(self, filename):
+
+        if filename[-5:] != '.json':
+            filename = ''.join((filename, '.json'))
+
+        with open(filename, 'r') as open_file:
+            data = json.load(open_file)
+
+        ctrl_pnts = data['ctrl_pnts']
+        knots_u = data['knots_u']
+        knots_v = data['knots_v']
+        deg_u = data['deg_u']
+        deg_v = data['deg_v']
+
+        fdn.check_nurbs_condition(len(ctrl_pnts), len(knots_u), deg_u)
+        fdn.check_nurbs_condition(len(ctrl_pnts[0]), len(knots_v), deg_v)
+
+        self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
+        self._knots_u = np.asarray(knots_u, dtype=np.double)
+        self._knots_v = np.asarray(knots_v, dtype=np.double)
+        self._deg_u = deg_u
+        self._deg_v = deg_v

@@ -21,8 +21,8 @@
 # ***************************************************************************
 
 
-from lxml import etree
 import json
+
 import numpy as np
 
 import foundation as fdn
@@ -109,7 +109,7 @@ class Curve(object):
         data = {'ctrl_pnts': ctrl_pnts, 'knots': knots, 'deg':self.deg}
 
         with open(filename, 'w') as open_file:
-            indent = 4 if verbose else None
+            indent = 2 if verbose else None
             json.dump(data, open_file, indent=indent)
 
     def import_json(self, filename):

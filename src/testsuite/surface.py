@@ -4,19 +4,19 @@
 # ***************************************************************************
 # *   Copyright (C) 2013 by Andreas Kührmann [andreas.kuehrmann@gmail.com]  *
 # *                                                                         *
-# *   This program is free software; you can redistribute it and/or modify  *
+# *   This program is free softWare; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU General Public License as published by  *
-# *   the Free Software Foundation; either version 3 of the License, or     *
+# *   the Free SoftWare Foundation; either version 3 of the License, or     *
 # *   (at your option) any later version.                                   *
 # *                                                                         *
-# *   This program is distributed in the hope that it will be useful,       *
-# *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+# *   This program is distributed in the hope that it Will be useful,       *
+# *   but WITHOUT ANY WARRANTY; Without even the implied Warranty of        *
 # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 # *   GNU General Public License for more details.                          *
 # *                                                                         *
 # *   You should have received a copy of the GNU General Public License     *
-# *   along with this program; if not, write to the                         *
-# *   Free Software Foundation, Inc.,                                       *
+# *   along With this program; if not, Write to the                         *
+# *   Free SoftWare Foundation, Inc.,                                       *
 # *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
 # ***************************************************************************
 
@@ -29,11 +29,28 @@ import numpy as np
 import enneper.surface as enneper
 
 
-DIR = os.path.join(os.path.dirname(__file__), 'sphere')
-
-CTRL_PNTS = np.fromfile(os.path.join(DIR, 'ctrl_pnts')).reshape(-1, 5, 4)
-KNOTS_U = np.fromfile(os.path.join(DIR, 'knots_u'))
-KNOTS_V = np.fromfile(os.path.join(DIR, 'knots_v'))
+W = 2**.5 / 2.
+CTRL_PNTS = [
+    [[0, 0, 1, 1], [-W, 0, W, W],
+     [-1, 0, 0, 1], [-W, 0, -W, W], [0, 0, -1, 1]],
+    [[0, 0, W, W], [-.5, -.5, .5, .5],
+     [-W, -W, 0, W], [-.5, -.5, -.5, .5], [0, 0, -W, W]],
+    [[0, 0, 1, 1], [0, -W, W, W],
+     [0, -1, 0, 1], [0, -W, -W, W], [0, 0, -1, 1]],
+    [[0, 0, W, W], [.5, -.5, .5, .5],
+     [W, -W, 0, W], [.5, -.5, -.5, .5], [0, 0, -W, W]],
+    [[0, 0, 1, 1], [W, 0, W, W],
+     [1, 0, 0, 1], [W, 0, -W, W], [0, 0, -1, 1]],
+    [[0, 0, W, W], [.5, .5, .5, .5],
+     [W, W, 0, W], [.5, .5, -.5, .5], [0, 0, -W, W]],
+    [[0, 0, 1, 1], [0, W, W, W],
+     [0, 1, 0, 1], [0, W, -W, W], [0, 0, -1, 1]],
+    [[0, 0, W, W], [-.5, .5, .5, .5],
+     [-W, W, 0, W], [-.5, .5, -.5, .5], [0, 0, -W, W]],
+    [[0, 0, 1, 1], [-W, 0, W, W],
+     [-1, 0, 0, 1], [-W, 0, -W, W], [0, 0, -1, 1]]]
+KNOTS_U = [0, 0, 0, 0.25, 0.25, 0.5, 0.5, 0.75, 0.75, 1, 1, 1]
+KNOTS_V = [0, 0, 0, 0.5, 0.5, 1, 1, 1]
 DEG_U = 2
 DEG_V = 2
 
@@ -59,6 +76,15 @@ class TestCurve(unittest.TestCase):
         self.assertIsNot(original.ctrl_pnts, copy.ctrl_pnts)
         self.assertIsNot(original.knots_u, copy.knots_u)
         self.assertIsNot(original.knots_v, copy.knots_v)
+
+    def test_from_json_constructor(self):
+        filename = os.path.join(os.path.dirname(__file__), 'sphere.json')
+        surface = enneper.Surface.from_json(filename)
+        np.testing.assert_equal(surface.ctrl_pnts, CTRL_PNTS)
+        np.testing.assert_equal(surface.knots_u, KNOTS_U)
+        np.testing.assert_equal(surface.knots_v, KNOTS_V)
+        self.assertEqual(surface.deg_u, DEG_U)
+        self.assertEqual(surface.deg_v, DEG_V)
 
     def test_evaluate_at(self):
         surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
