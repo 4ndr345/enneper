@@ -32,7 +32,7 @@ extra_args = []
 # compilers.
 extra_args = ["-fopenmp"]
 
-exts = [Extension("foundation_cython", 
+exts = [Extension("cfoundation", 
                   ["src/enneper/foundation.pyx"],
                   extra_compile_args=extra_args,
                   extra_link_args=extra_args,

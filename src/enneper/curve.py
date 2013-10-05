@@ -24,8 +24,7 @@
 import numpy as np
 
 import foundation as fdn
-import foundation_cython as cfdn
-
+import cfoundation as cfdn
 
 
 __all__ = ['Curve']
@@ -47,12 +46,10 @@ class Curve(object):
 
     @classmethod
     def from_curve(cls, curve):
-        copied_curve = cls()
-        n, dim = curve.ctrl_pnts.shape
-        copied_curve.resize(n, dim, curve.deg)
-        copied_curve.ctrl_pnts[:] = curve.ctrl_pnts
-        copied_curve.knots[:] = curve.knots
-        return copied_curve
+        ctrl_pnts = curve.ctrl_pnts.copy()
+        knots = curve.knots.copy()
+        deg = curve.deg
+        return cls(ctrl_pnts, knots, deg)
 
 ###############################################################################
 # properties
