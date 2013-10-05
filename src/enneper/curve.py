@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ***************************************************************************
-# *   Copyright (C) 2012 by Andreas Kührmann [andreas.kuehrmann@gmail.com]  *
+# *   Copyright (C) 2013 by Andreas Kührmann [andreas.kuehrmann@gmail.com]  *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU General Public License as published by  *
@@ -34,10 +34,12 @@ class Curve(object):
 
     def __init__(self, ctrl_pnts, knots, deg):
         """designated initializer"""
+
         if len(ctrl_pnts) + deg + 1 != len(knots):
             raise fdn.NURBSException(len(ctrl_pnts), len(knots), deg)
-        self._ctrl_pnts = np.asarray(ctrl_pnts)
-        self._knots = np.asarray(knots)
+
+        self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
+        self._knots = np.asarray(knots, dtype=np.double)
         self._deg = deg
 
 ###############################################################################
@@ -72,14 +74,12 @@ class Curve(object):
 ###############################################################################
 
     def evaluate_at(self, u):
-        deg, knots, ctrl_pnts = self.deg, self.knots, self.ctrl_pnts
-        span = cfdn.find_span(ctrl_pnts.shape[0], deg, u, knots)
-        basis_funs = np.empty((deg + 1, 1), dtype=np.double)
-        cfdn.basis_funs(span, u, deg, knots, basis_funs[:, 0])
-        lb, ub = span - deg, span + 1
-        return np.sum(ctrl_pnts[lb:ub] * basis_funs, 0)
+        knots = self.knots
+        deg = self.deg
 
-    def resize(self, n, dim, deg):
-        self._ctrl_pnts = np.zeros((n, dim))
-        self._knots = np.zeros(n + deg + 1)
-        self._deg = deg
+        index = cfdn.get_index(u, deg, knots)
+        basis_funs = np.empty((deg + 1, 1), dtype=np.double)
+        cfdn.calc_basis_funs(index, u, deg, knots, basis_funs[:, 0])
+
+        lb, ub = index - deg, index + 1
+        return np.sum(self.ctrl_pnts[lb:ub] * basis_funs, 0)

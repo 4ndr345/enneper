@@ -27,17 +27,23 @@ import foundation as fdn
 import cfoundation as cfdn
 
 
+__all__ = ['Surface']
+
+
 class Surface(object):
 
     def __init__(self, ctrl_pnts, knots_u, knots_v, deg_u, deg_v):
         """designated initializer"""
+
         if len(ctrl_pnts) + deg_u + 1 != len(knots_u):
             raise fdn.NURBSException(len(ctrl_pnts), len(knots_u), deg_u)
+
         if len(ctrl_pnts[0]) + deg_v + 1 != len(knots_v):
             raise fdn.NURBSException(len(ctrl_pnts[0]), len(knots_v), deg_v)
-        self._ctrl_pnts = np.asarray(ctrl_pnts)
-        self._knots_u = np.asarray(knots_u)
-        self._knots_v = np.asarray(knots_v)
+
+        self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
+        self._knots_u = np.asarray(knots_u, dtype=np.double)
+        self._knots_v = np.asarray(knots_v, dtype=np.double)
         self._deg_u = deg_u
         self._deg_v = deg_v
 
@@ -82,24 +88,19 @@ class Surface(object):
 # miscellaneous methods
 ###############################################################################
 
-    def resize(self, n_u, n_v, dim, deg_u, deg_v):
-        self._ctrl_pnts = np.zeros((n_u, n_v, dim))
-        self._knots_u = np.zeros(n_u + deg_u + 1)
-        self._knots_v = np.zeros(n_v + deg_v + 1)
-        self._deg_u = deg_u
-        self._deg_v = deg_v
-
     def evaluate_at(self, u, v):
-        ctrl_pnts = self.ctrl_pnts
         knots_u, knots_v = self._knots_u, self._knots_v
         deg_u, deg_v = self._deg_u, self._deg_v
-        span_u = cfdn.find_span(ctrl_pnts.shape[0], deg_u, u, knots_u)
+
+        index_u = cfdn.get_index(u, deg_u, knots_u)
         basis_funs_u = np.empty((deg_u + 1, 1, 1), dtype=np.double)
-        cfdn.basis_funs(span_u, u, deg_u, knots_u, basis_funs_u[:, 0, 0])
-        span_v = cfdn.find_span(ctrl_pnts.shape[1], deg_v, v, knots_v)
+        cfdn.calc_basis_funs(index_u, u, deg_u, knots_u, basis_funs_u[:, 0, 0])
+
+        index_v = cfdn.get_index(v, deg_v, knots_v)
         basis_funs_v = np.empty((deg_v + 1, 1), dtype=np.double)
-        cfdn.basis_funs(span_v, v, deg_v, knots_v, basis_funs_v[:, 0])
-        lb_u, ub_u = span_u - deg_u, span_u + 1
-        lb_v, ub_v = span_v - deg_v, span_v + 1
-        tmp = np.sum(ctrl_pnts[lb_u:ub_u, lb_v:ub_v] * basis_funs_u, 0)
+        cfdn.calc_basis_funs(index_v, v, deg_v, knots_v, basis_funs_v[:, 0])
+
+        lb_u, ub_u = index_u - deg_u, index_u + 1
+        lb_v, ub_v = index_v - deg_v, index_v + 1
+        tmp = np.sum(self.ctrl_pnts[lb_u:ub_u, lb_v:ub_v] * basis_funs_u, 0)
         return np.sum(tmp * basis_funs_v, 0)

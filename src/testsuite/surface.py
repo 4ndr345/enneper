@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ***************************************************************************
-# *   Copyright (C) 2012 by Andreas Kührmann [andreas.kuehrmann@gmail.com]  *
+# *   Copyright (C) 2013 by Andreas Kührmann [andreas.kuehrmann@gmail.com]  *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU General Public License as published by  *
@@ -42,18 +42,18 @@ class TestCurve(unittest.TestCase):
 
     def test_designated_initializer(self):
         surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
-        np.testing.assert_array_equal(surface.ctrl_pnts, CTRL_PNTS)
-        np.testing.assert_array_equal(surface.knots_u, KNOTS_U)
-        np.testing.assert_array_equal(surface.knots_v, KNOTS_V)
+        np.testing.assert_equal(surface.ctrl_pnts, CTRL_PNTS)
+        np.testing.assert_equal(surface.knots_u, KNOTS_U)
+        np.testing.assert_equal(surface.knots_v, KNOTS_V)
         self.assertEqual(surface.deg_u, DEG_U)
         self.assertEqual(surface.deg_v, DEG_V)
 
     def test_from_surface_constructor(self):
         original = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
         copy = enneper.Surface.from_surface(original)
-        np.testing.assert_array_equal(original.ctrl_pnts, copy.ctrl_pnts)
-        np.testing.assert_array_equal(original.knots_u, copy.knots_u)
-        np.testing.assert_array_equal(original.knots_v, copy.knots_v)
+        np.testing.assert_equal(original.ctrl_pnts, copy.ctrl_pnts)
+        np.testing.assert_equal(original.knots_u, copy.knots_u)
+        np.testing.assert_equal(original.knots_v, copy.knots_v)
         self.assertEqual(original.deg_u, copy.deg_u)
         self.assertEqual(original.deg_v, copy.deg_v)
         self.assertIsNot(original.ctrl_pnts, copy.ctrl_pnts)
@@ -62,7 +62,7 @@ class TestCurve(unittest.TestCase):
 
     def test_evaluate_at(self):
         surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
-        np.testing.assert_array_equal(surface.evaluate_at(0, 0), [ 0.,  0.,  1.,  1.])
+        np.testing.assert_equal(surface.evaluate_at(0, 0), [ 0.,  0.,  1.,  1.])
 
 
 if __name__ == '__main__':
