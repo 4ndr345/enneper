@@ -21,10 +21,13 @@
 # ***************************************************************************
 
 
+# standard packages
 import json
 
+# 3rd party packages
 import numpy as np
 
+# project packages
 import foundation as fdn
 import cfoundation as cfdn
 

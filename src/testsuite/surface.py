@@ -21,14 +21,18 @@
 # ***************************************************************************
 
 
+# standard packages
 import os
 import unittest
 
+# 3rd party packages
 import numpy as np
 
-import enneper.surface as enneper
+# project packages
+import enneper
 
 
+# sphere
 W = 2**.5 / 2.
 CTRL_PNTS = [
     [[0, 0, 1, 1], [-W, 0, W, W],

@@ -21,12 +21,15 @@
 # ***************************************************************************
 
 
+# standard packages
 import os
 import unittest
 
+# 3rd party packages
 import numpy as np
 
-import enneper.curve as enneper
+# project packages
+import enneper
 
 
 # The NURBS Book 2nd edition: example 4.1 (page 122 ff.)

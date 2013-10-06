@@ -2,13 +2,14 @@
 enneper
 =======
 
-The **enneper** module is a library for NURBS (Non Uniform Rational B-Splines) curves and surfaces.
+The **enneper** package is a library for NURBS (Non Uniform Rational B-Splines) curves and surfaces.
 
 
 Dependencies
 ------------
 * Python 2.7.3
 * NumPy 1.6.1
+* Cython 0.19
 
 TODO
 ----
@@ -26,10 +27,10 @@ TODO
     * profile surfaces
         * monorail
         * birail
-    * surface of revoluti~on
+    * surface of revolution
 * OpenGL support
 * VTK support?
-* ~~write low level NURBS function in c or cython~~
+* ~~low level function in cython~~
 
 License
 =======
