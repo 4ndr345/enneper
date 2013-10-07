@@ -56,29 +56,28 @@ class Surface(object):
     @classmethod
     def from_surface(cls, surface):
 
+        # copy data
         ctrl_pnts = surface.ctrl_pnts.copy()
         knots_u = surface.knots_u.copy()
         knots_v = surface.knots_v.copy()
         deg_u = surface.deg_u
         deg_v = surface.deg_v
 
+        # call designated initializer
         return cls(ctrl_pnts, knots_u, knots_v, deg_u, deg_v)
 
     @classmethod
-    def from_json(cls, filename):
-        
-        if filename[-5:] != '.json':
-            filename = ''.join((filename, '.json'))
+    def from_json(cls, flo):
 
-        with open(filename, 'r') as open_file:
-            data = json.load(open_file)
-
+        # load data
+        data = json.load(flo)
         ctrl_pnts = data['ctrl_pnts']
         knots_u = data['knots_u']
         knots_v = data['knots_v']
         deg_u = data['deg_u']
         deg_v = data['deg_v']
 
+        # call designated initializer
         return cls(ctrl_pnts, knots_u, knots_v, deg_u, deg_v)
 
 ###############################################################################
@@ -110,31 +109,30 @@ class Surface(object):
 ###############################################################################
 
     def evaluate_at(self, u, v):
+
+        # save local to avoid looking up twice or more
         knots_u, knots_v = self._knots_u, self._knots_v
         deg_u, deg_v = self._deg_u, self._deg_v
 
+        # low level nurbs function written in cython
         index_u = cfdn.get_index(u, deg_u, knots_u)
         basis_funs_u = np.empty((deg_u + 1, 1, 1), dtype=np.double)
         cfdn.calc_basis_funs(index_u, u, deg_u, knots_u, basis_funs_u[:, 0, 0])
 
+        # low level nurbs function written in cython
         index_v = cfdn.get_index(v, deg_v, knots_v)
         basis_funs_v = np.empty((deg_v + 1, 1), dtype=np.double)
         cfdn.calc_basis_funs(index_v, v, deg_v, knots_v, basis_funs_v[:, 0])
 
+        # calc homogeneous point
         lb_u, ub_u = index_u - deg_u, index_u + 1
         lb_v, ub_v = index_v - deg_v, index_v + 1
         tmp = np.sum(self.ctrl_pnts[lb_u:ub_u, lb_v:ub_v] * basis_funs_u, 0)
         return np.sum(tmp * basis_funs_v, 0)
 
-###############################################################################
-# i/o methods
-###############################################################################
+    def export(self, flo, indent=None):
 
-    def export_json(self, filename, verbose=False):
-
-        if filename[-5:] != '.json':
-            filename = ''.join((filename, '.json'))
-
+        # json can't handle ndarrays
         data = dict()
         data['ctrl_pnts'] = self.ctrl_pnts.tolist()
         data['knots_u'] =  self.knots_u.tolist()
@@ -142,29 +140,5 @@ class Surface(object):
         data['deg_u'] = self.deg_u
         data['deg_v'] = self.deg_v
 
-        with open(filename, 'w') as open_file:
-            indent = 2 if verbose else None
-            json.dump(data, open_file, indent=indent)
-
-    def import_json(self, filename):
-
-        if filename[-5:] != '.json':
-            filename = ''.join((filename, '.json'))
-
-        with open(filename, 'r') as open_file:
-            data = json.load(open_file)
-
-        ctrl_pnts = data['ctrl_pnts']
-        knots_u = data['knots_u']
-        knots_v = data['knots_v']
-        deg_u = data['deg_u']
-        deg_v = data['deg_v']
-
-        fdn.check_nurbs_condition(len(ctrl_pnts), len(knots_u), deg_u)
-        fdn.check_nurbs_condition(len(ctrl_pnts[0]), len(knots_v), deg_v)
-
-        self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
-        self._knots_u = np.asarray(knots_u, dtype=np.double)
-        self._knots_v = np.asarray(knots_v, dtype=np.double)
-        self._deg_u = deg_u
-        self._deg_v = deg_v
+        # export
+        json.dump(data, flo, indent=indent)

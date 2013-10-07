@@ -42,6 +42,8 @@ DEG = 2
 class TestCurve(unittest.TestCase):
 
     def test_designated_initializer(self):
+
+        # test
         curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
         np.testing.assert_equal(curve.ctrl_pnts, CTRL_PNTS)
         np.testing.assert_equal(curve.knots, KNOTS)
