@@ -38,10 +38,11 @@ __all__ = ['Curve']
 class Curve(object):
 
     def __init__(self, ctrl_pnts, knots, deg):
-        """designated initializer"""
 
+        # raise a NURBSError when len(ctrl_pnts) + deg + 1 != len(knots)
         fdn.check_nurbs_condition(len(ctrl_pnts), len(knots), deg)
-
+        
+        # assign attributes
         self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
         self._knots = np.asarray(knots, dtype=np.double)
         self._deg = deg
@@ -52,17 +53,15 @@ class Curve(object):
 
     @classmethod
     def from_curve(cls, curve):
+
+        # nothig special copy and call designated initializer
         return cls(curve.ctrl_pnts.copy(), curve.knots.copy(), curve.deg)
 
     @classmethod
-    def from_json(cls, filename):
+    def from_json(cls, flo):
 
-        if filename[-5:] != '.json':
-            filename = ''.join((filename, '.json'))
-
-        with open(filename, 'r') as open_file:
-            data = json.load(open_file)
-
+        # nothing special load data and call designated initializer
+        data = json.load(flo)
         return cls(data['ctrl_pnts'], data['knots'], data['deg'])
 
 ###############################################################################
@@ -87,48 +86,25 @@ class Curve(object):
 
     def evaluate_at(self, u):
 
+        # save local to avoid looking up twice or more
         knots = self.knots
         deg = self.deg
 
+        # low level nurbs function written in cython
         index = cfdn.get_index(u, deg, knots)
         basis_funs = np.empty((deg + 1, 1), dtype=np.double)
         cfdn.calc_basis_funs(index, u, deg, knots, basis_funs[:, 0])
 
+        # calc homogeneous point
         lb, ub = index - deg, index + 1
         return np.sum(self.ctrl_pnts[lb:ub] * basis_funs, 0)
 
-###############################################################################
-# i/o methods
-###############################################################################
+    def export(self, flo, indent=None):
 
-    def export_json(self, filename, verbose=False):
-
-        if filename[-5:] != '.json':
-            filename = ''.join((filename, '.json'))
-
+        # json can't handle ndarrays
         ctrl_pnts = self.ctrl_pnts.tolist()
         knots = self.knots.tolist()
 
-        data = {'ctrl_pnts': ctrl_pnts, 'knots': knots, 'deg':self.deg}
-
-        with open(filename, 'w') as open_file:
-            indent = 2 if verbose else None
-            json.dump(data, open_file, indent=indent)
-
-    def import_json(self, filename):
-
-        if filename[-5:] != '.json':
-            filename = ''.join((filename, '.json'))
-
-        with open(filename, 'r') as open_file:
-            data = json.load(open_file)
-
-        ctrl_pnts = data['ctrl_pnts']
-        knots = data['knots']
-        deg = data['deg']
-
-        fdn.check_nurbs_condition(len(ctrl_pnts), len(knots), deg)
-
-        self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
-        self._knots = np.asarray(knots, dtype=np.double)
-        self._deg = deg
+        # export curve
+        data = dict(ctrl_pnts=ctrl_pnts, knots=knots, deg=self.deg)
+        json.dump(data, flo, indent=indent)

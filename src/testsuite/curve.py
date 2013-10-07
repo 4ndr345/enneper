@@ -22,7 +22,8 @@
 
 
 # standard packages
-import os
+import cStringIO
+import json
 import unittest
 
 # 3rd party packages
@@ -47,7 +48,11 @@ class TestCurve(unittest.TestCase):
         self.assertEqual(curve.deg, DEG)
 
     def test_from_curve_constructor(self):
+
+        # construct test data
         original = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
+
+        # test
         copy = enneper.Curve.from_curve(original)
         np.testing.assert_equal(original.ctrl_pnts, copy.ctrl_pnts)
         np.testing.assert_equal(original.knots, copy.knots)
@@ -56,15 +61,42 @@ class TestCurve(unittest.TestCase):
         self.assertIsNot(original.knots, copy.knots)
 
     def test_from_json_constructor(self):
-        filename = os.path.join(os.path.dirname(__file__), 'curve.json')
-        curve = enneper.Curve.from_json(filename)
+
+        # construct test data
+        data = dict(ctrl_pnts=CTRL_PNTS, knots=KNOTS, deg=DEG)
+        flo = cStringIO.StringIO()
+        json.dump(data, flo)
+        flo.seek(0)
+
+        # test 
+        curve = enneper.Curve.from_json(flo)
         np.testing.assert_equal(curve.ctrl_pnts, CTRL_PNTS)
         np.testing.assert_equal(curve.knots, KNOTS)
         self.assertEqual(curve.deg, DEG)
 
+        # close and discard memory buffer
+        flo.close()
+
     def test_evaluate_at(self):
+
+        # The NURBS Book 2nd edition: example 4.1 (page 122 ff.)
         curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
         np.testing.assert_equal(curve.evaluate_at(1), [3.5, 3., 2.5])
+
+    def test_export(self):
+
+        # construct test data
+        flo = cStringIO.StringIO()
+        curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
+        curve.export(flo)
+        flo.seek(0)
+        data = json.load(flo)
+        flo.close()
+
+        # test
+        np.testing.assert_equal(data['ctrl_pnts'], CTRL_PNTS)
+        np.testing.assert_equal(data['knots'], KNOTS)
+        self.assertEqual(data['deg'], DEG)
 
 
 if __name__ == '__main__':
