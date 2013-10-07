@@ -37,15 +37,9 @@ __all__ = ['Curve']
 
 class Curve(object):
 
-    def __init__(self, ctrl_pnts, knots, deg):
-
-        # raise a NURBSError when len(ctrl_pnts) + deg + 1 != len(knots)
-        fdn.check_nurbs_condition(len(ctrl_pnts), len(knots), deg)
-        
-        # assign attributes
-        self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
-        self._knots = np.asarray(knots, dtype=np.double)
-        self._deg = deg
+    def __init__(self, ctrl_pnts, knots):
+        self.ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
+        self.knots = np.asarray(knots, dtype=np.double)
 
 ###############################################################################
 # constructors
@@ -53,32 +47,20 @@ class Curve(object):
 
     @classmethod
     def from_curve(cls, curve):
-
-        # nothig special copy and call designated initializer
-        return cls(curve.ctrl_pnts.copy(), curve.knots.copy(), curve.deg)
+        return cls(curve.ctrl_pnts.copy(), curve.knots.copy())
 
     @classmethod
     def from_json(cls, flo):
-
-        # nothing special load data and call designated initializer
         data = json.load(flo)
-        return cls(data['ctrl_pnts'], data['knots'], data['deg'])
+        return cls(data['ctrl_pnts'], data['knots'])
 
 ###############################################################################
 # properties
 ###############################################################################
 
     @property
-    def ctrl_pnts(self):
-        return self._ctrl_pnts
-
-    @property
-    def knots(self):
-        return self._knots
-
-    @property
     def deg(self):
-        return self._deg
+        return len(self.knots) - len(self.ctrl_pnts) - 1
 
 ###############################################################################
 # miscellaneous methods
@@ -97,17 +79,13 @@ class Curve(object):
 
         # calc homogeneous point
         lb, ub = index - deg, index + 1
-        return np.sum(self._ctrl_pnts[lb:ub] * basis_funs, 0)
+        return np.sum(self.ctrl_pnts[lb:ub] * basis_funs, 0)
 
     def transform(self, matrix):
-        self._ctrl_pnts = np.dot(matrix, self._ctrl_pnts)
+        self.ctrl_pnts = np.dot(matrix, self.ctrl_pnts)
 
     def export(self, flo, indent=None):
 
         # json can't handle ndarrays
-        ctrl_pnts = self._ctrl_pnts.tolist()
-        knots = self.knots.tolist()
-
-        # export curve
-        data = dict(ctrl_pnts=ctrl_pnts, knots=knots, deg=self.deg)
+        data = dict(ctrl_pnts=self.ctrl_pnts.tolist(), knots=self.knots.tolist())
         json.dump(data, flo, indent=indent)

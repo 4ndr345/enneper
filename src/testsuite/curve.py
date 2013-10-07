@@ -44,28 +44,26 @@ class TestCurve(unittest.TestCase):
     def test_designated_initializer(self):
 
         # test
-        curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
+        curve = enneper.Curve(CTRL_PNTS, KNOTS)
         np.testing.assert_equal(curve.ctrl_pnts, CTRL_PNTS)
         np.testing.assert_equal(curve.knots, KNOTS)
-        self.assertEqual(curve.deg, DEG)
 
     def test_from_curve_constructor(self):
 
         # construct test data
-        original = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
+        original = enneper.Curve(CTRL_PNTS, KNOTS)
 
         # test
         copy = enneper.Curve.from_curve(original)
         np.testing.assert_equal(original.ctrl_pnts, copy.ctrl_pnts)
         np.testing.assert_equal(original.knots, copy.knots)
-        self.assertEqual(original.deg, copy.deg)
         self.assertIsNot(original.ctrl_pnts, copy.ctrl_pnts)
         self.assertIsNot(original.knots, copy.knots)
 
     def test_from_json_constructor(self):
 
         # construct test data
-        data = dict(ctrl_pnts=CTRL_PNTS, knots=KNOTS, deg=DEG)
+        data = dict(ctrl_pnts=CTRL_PNTS, knots=KNOTS)
         flo = cStringIO.StringIO()
         json.dump(data, flo)
         flo.seek(0)
@@ -74,22 +72,27 @@ class TestCurve(unittest.TestCase):
         curve = enneper.Curve.from_json(flo)
         np.testing.assert_equal(curve.ctrl_pnts, CTRL_PNTS)
         np.testing.assert_equal(curve.knots, KNOTS)
-        self.assertEqual(curve.deg, DEG)
 
         # close and discard memory buffer
         flo.close()
 
+    def test_deg_property(self):
+
+        # The NURBS Book 2nd edition: example 4.1 (page 122 ff.)
+        curve = enneper.Curve(CTRL_PNTS, KNOTS)
+        self.assertEqual(curve.deg, DEG)
+
     def test_evaluate_at(self):
 
         # The NURBS Book 2nd edition: example 4.1 (page 122 ff.)
-        curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
+        curve = enneper.Curve(CTRL_PNTS, KNOTS)
         np.testing.assert_equal(curve.evaluate_at(1), [3.5, 3., 2.5])
 
     def test_export(self):
 
         # construct test data
         flo = cStringIO.StringIO()
-        curve = enneper.Curve(CTRL_PNTS, KNOTS, DEG)
+        curve = enneper.Curve(CTRL_PNTS, KNOTS)
         curve.export(flo)
         flo.seek(0)
         data = json.load(flo)
@@ -98,7 +101,6 @@ class TestCurve(unittest.TestCase):
         # test
         np.testing.assert_equal(data['ctrl_pnts'], CTRL_PNTS)
         np.testing.assert_equal(data['knots'], KNOTS)
-        self.assertEqual(data['deg'], DEG)
 
 
 if __name__ == '__main__':
