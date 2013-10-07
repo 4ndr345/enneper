@@ -97,12 +97,15 @@ class Curve(object):
 
         # calc homogeneous point
         lb, ub = index - deg, index + 1
-        return np.sum(self.ctrl_pnts[lb:ub] * basis_funs, 0)
+        return np.sum(self._ctrl_pnts[lb:ub] * basis_funs, 0)
+
+    def transform(self, matrix):
+        self._ctrl_pnts = np.dot(matrix, self._ctrl_pnts)
 
     def export(self, flo, indent=None):
 
         # json can't handle ndarrays
-        ctrl_pnts = self.ctrl_pnts.tolist()
+        ctrl_pnts = self._ctrl_pnts.tolist()
         knots = self.knots.tolist()
 
         # export curve
