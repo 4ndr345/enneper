@@ -81,6 +81,18 @@ class Curve(object):
         lb, ub = index - deg, index + 1
         return np.sum(self.ctrl_pnts[lb:ub] * basis_funs, 0)
 
+    def lift_dimension(self):
+
+        # save local to avoid looking up twice or more
+        ctrl_pnts = self.ctrl_pnts
+
+        # build new dimension
+        new_dimension = np.zeros((ctrl_pnts.shape[0], 1))
+        weights = ctrl_pnts[:, -1, None]
+
+        # build new control points
+        self.ctrl_pnts = np.hstack((ctrl_pnts[:, :-1], new_dimension, weights))
+
     def transform(self, matrix):
         self.ctrl_pnts = np.dot(matrix, self.ctrl_pnts)
 
