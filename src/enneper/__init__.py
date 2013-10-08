@@ -21,6 +21,8 @@
 # ***************************************************************************
 
 
+import primitives
+
 import curve
 from curve import *
 import surface

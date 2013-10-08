@@ -21,58 +21,28 @@
 # ***************************************************************************
 
 
-# standard packages
-from __future__ import division
-import math
+import unittest
 
-# 3rd party packages
 import numpy as np
 
-# project packages
-from curve import Curve
+import enneper
 
 
-def CircularArc(length):
+class TestPrimitives(unittest.TestCase):
 
-    if abs(length) <= np.pi * .5:
-        narcs = 1
-        knots = [0, 0, 0, 1, 1, 1]
-    elif abs(length) <= np.pi:
-        narcs = 2
-        knots = [0, 0, 0, .5, .5, 1, 1, 1]
-    elif abs(length) <= 1.5 * np.pi:
-        narcs = 3
-        knots = [0, 0, 0, .33333333, .33333333, .66666666, .66666666, 1, 1, 1]
-    else:
-        narcs = 4
-        knots = [0, 0, 0, .25, .25, .5, .5, .75, .75, 1, 1, 1]
+    def test_line(self):
+        line = enneper.primitives.Line([0, 0, 0], [1, 1, 1])
+        np.testing.assert_equal(line.evaluate_at(0), [0, 0, 0, 1])
+        np.testing.assert_equal(line.evaluate_at(1), [1, 1, 1, 1])
 
-    step_size  = length / narcs
-    angels = [i * step_size for i in range(narcs + 1)]
-
-    x = np.cos(angels)
-    y = np.sin(angels)
-    w = math.cos(step_size * 0.5)
-
-    ctrl_pnts = np.ones((2 * narcs + 1, 3))
-    ctrl_pnts[::2, 0] = x
-    ctrl_pnts[::2, 1] = y
-
-    tangents = np.ones((len(angels), 3))
-    tangents[:, 0] = x - y
-    tangents[:, 1] = y + x
-
-    bounding_box = np.cross(ctrl_pnts[::2], tangents)
-    ctrl_pnts[1::2] = np.cross(bounding_box[:-1], bounding_box[1:])
-
-    ctrl_pnts[1::2] = ctrl_pnts[1::2] / ctrl_pnts[1, -1] * w
-
-    return Curve(ctrl_pnts, knots)
+    def test_circular_arc (self):
+        circle = enneper.primitives.CircularArc(2 * np.pi)
+        np.testing.assert_almost_equal(circle.evaluate_at(0), [1, 0, 1])
+        np.testing.assert_almost_equal(circle.evaluate_at(.25), [0, 1, 1])
+        np.testing.assert_almost_equal(circle.evaluate_at(.5), [-1, 0, 1])
+        np.testing.assert_almost_equal(circle.evaluate_at(.75), [0, -1, 1])
+        np.testing.assert_almost_equal(circle.evaluate_at(1), [1, 0, 1])
 
 
-def Line(start_pnt, end_pnt):
-
-    ctrl_pnts = np.hstack((np.vstack((start_pnt, end_pnt)), np.ones((2, 1))))
-    knots = [0, 0, 1, 1]
-
-    return Curve(ctrl_pnts, knots)
+if __name__ == '__main__':
+    unittest.main()
