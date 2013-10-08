@@ -50,9 +50,8 @@ class Curve(object):
         return cls(curve.ctrl_pnts.copy(), curve.knots.copy())
 
     @classmethod
-    def from_json(cls, flo):
-        data = json.load(flo)
-        return cls(data['ctrl_pnts'], data['knots'])
+    def from_json(cls, file_like_obj):
+        return cls(**json.load(file_like_obj))
 
 ###############################################################################
 # properties
@@ -72,7 +71,7 @@ class Curve(object):
         knots = self.knots
         deg = self.deg
 
-        # low level nurbs function written in cython
+        # see "The NURBS Book" 2nd edition: algorithm A2.1 and A2.2
         index = cfdn.get_index(u, deg, knots)
         basis_funs = np.empty((deg + 1, 1), dtype=np.double)
         cfdn.calc_basis_funs(index, u, deg, knots, basis_funs[:, 0])
@@ -81,23 +80,14 @@ class Curve(object):
         lb, ub = index - deg, index + 1
         return np.sum(self.ctrl_pnts[lb:ub] * basis_funs, 0)
 
-    def lift_dimension(self):
-
-        # save local to avoid looking up twice or more
-        ctrl_pnts = self.ctrl_pnts
-
-        # build new dimension
-        new_dimension = np.zeros((ctrl_pnts.shape[0], 1))
-        weights = ctrl_pnts[:, -1, None]
-
-        # build new control points
-        self.ctrl_pnts = np.hstack((ctrl_pnts[:, :-1], new_dimension, weights))
-
     def transform(self, matrix):
-        self.ctrl_pnts = np.dot(matrix, self.ctrl_pnts)
+        self.ctrl_pnts = np.dot(matrix, self.ctrl_pnts.transpose()).transpose()
 
-    def export(self, flo, indent=None):
+    def export(self, file_like_obj, indent=None):
 
         # json can't handle ndarrays
-        data = dict(ctrl_pnts=self.ctrl_pnts.tolist(), knots=self.knots.tolist())
-        json.dump(data, flo, indent=indent)
+        ctrl_pnts = self.ctrl_pnts.tolist()
+        knots = self.knots.tolist()
+
+        obj_to_serialize = dict(ctrl_pnts=ctrl_pnts, knots=knots)
+        json.dump(obj_to_serialize, file_like_obj, indent=indent)
