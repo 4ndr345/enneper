@@ -28,8 +28,9 @@ import json
 import numpy as np
 
 # project packages
-import foundation as fdn
 import cfoundation as cfdn
+import foundation as fdn
+import matrices
 
 
 __all__ = ['Surface']
@@ -60,6 +61,22 @@ class Surface(object):
     @classmethod
     def from_json(cls, file_like_obj):
         return cls(**json.load(file_like_obj))
+
+    @classmethod
+    def from_extrude_curve(cls, curve, vector):
+
+        i, j = curve.ctrl_pnts.shape
+        ctrl_pnt = np.zeros((i, 2, j), np.double)
+
+        ctrl_pnt[:, 0] = curve.ctrl_pnts.copy()
+
+        matrix = matrices.translate(vector)
+        ctrl_pnt[:, 1] = np.dot(matrix, ctrl_pnt[:, 0].transpose()).transpose()
+
+        knot_u = curve.knots.copy()
+        knot_v = np.asarray([0, 0, 1, 1], dtype=np.double)
+
+        return cls(ctrl_pnt, knot_u, knot_v)
 
 ###############################################################################
 # properties
