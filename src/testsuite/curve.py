@@ -50,7 +50,7 @@ class TestCurve(unittest.TestCase):
 
     def test_from_curve_constructor(self):
 
-        # construct test data
+        # construct test obj_to_serialize
         original = enneper.Curve(CTRL_PNTS, KNOTS)
 
         # test
@@ -62,19 +62,19 @@ class TestCurve(unittest.TestCase):
 
     def test_from_json_constructor(self):
 
-        # construct test data
-        data = dict(ctrl_pnts=CTRL_PNTS, knots=KNOTS)
-        flo = cStringIO.StringIO()
-        json.dump(data, flo)
-        flo.seek(0)
+        # construct test obj_to_serialize
+        obj_to_serialize = dict(ctrl_pnts=CTRL_PNTS, knots=KNOTS)
+        file_like_obj = cStringIO.StringIO()
+        json.dump(obj_to_serialize, file_like_obj)
+        file_like_obj.seek(0)
 
         # test 
-        curve = enneper.Curve.from_json(flo)
+        curve = enneper.Curve.from_json(file_like_obj)
         np.testing.assert_equal(curve.ctrl_pnts, CTRL_PNTS)
         np.testing.assert_equal(curve.knots, KNOTS)
 
         # close and discard memory buffer
-        flo.close()
+        file_like_obj.close()
 
     def test_deg_property(self):
 
@@ -90,17 +90,17 @@ class TestCurve(unittest.TestCase):
 
     def test_export(self):
 
-        # construct test data
-        flo = cStringIO.StringIO()
+        # construct test obj_to_serialize
+        file_like_obj = cStringIO.StringIO()
         curve = enneper.Curve(CTRL_PNTS, KNOTS)
-        curve.export(flo)
-        flo.seek(0)
-        data = json.load(flo)
-        flo.close()
+        curve.export(file_like_obj)
+        file_like_obj.seek(0)
+        obj_to_serialize = json.load(file_like_obj)
+        file_like_obj.close()
 
         # test
-        np.testing.assert_equal(data['ctrl_pnts'], CTRL_PNTS)
-        np.testing.assert_equal(data['knots'], KNOTS)
+        np.testing.assert_equal(obj_to_serialize['ctrl_pnts'], CTRL_PNTS)
+        np.testing.assert_equal(obj_to_serialize['knots'], KNOTS)
 
 
 if __name__ == '__main__':

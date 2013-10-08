@@ -65,75 +65,71 @@ class TestCurve(unittest.TestCase):
     def test_designated_initializer(self):
 
         # test
-        surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
+        surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V)
         np.testing.assert_equal(surface.ctrl_pnts, CTRL_PNTS)
         np.testing.assert_equal(surface.knots_u, KNOTS_U)
         np.testing.assert_equal(surface.knots_v, KNOTS_V)
-        self.assertEqual(surface.deg_u, DEG_U)
-        self.assertEqual(surface.deg_v, DEG_V)
 
     def test_from_surface_constructor(self):
 
-        # construct test data
-        original = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
+        # construct test obj_to_serialize
+        original = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V)
 
         # test
         copy = enneper.Surface.from_surface(original)
         np.testing.assert_equal(original.ctrl_pnts, copy.ctrl_pnts)
         np.testing.assert_equal(original.knots_u, copy.knots_u)
         np.testing.assert_equal(original.knots_v, copy.knots_v)
-        self.assertEqual(original.deg_u, copy.deg_u)
-        self.assertEqual(original.deg_v, copy.deg_v)
         self.assertIsNot(original.ctrl_pnts, copy.ctrl_pnts)
         self.assertIsNot(original.knots_u, copy.knots_u)
         self.assertIsNot(original.knots_v, copy.knots_v)
 
     def test_from_json_constructor(self):
 
-        # construct test data
-        data = dict()
-        data['ctrl_pnts'] = CTRL_PNTS
-        data['knots_u'] = KNOTS_U
-        data['knots_v'] = KNOTS_V
-        data['deg_u'] = DEG_U
-        data['deg_v'] = DEG_V
-        flo = cStringIO.StringIO()
-        json.dump(data, flo)
-        flo.seek(0)
+        # construct test obj_to_serialize
+        obj_to_serialize = dict()
+        obj_to_serialize['ctrl_pnts'] = CTRL_PNTS
+        obj_to_serialize['knots_u'] = KNOTS_U
+        obj_to_serialize['knots_v'] = KNOTS_V
+        file_like_obj = cStringIO.StringIO()
+        json.dump(obj_to_serialize, file_like_obj)
+        file_like_obj.seek(0)
 
         # test 
-        surface = enneper.Surface.from_json(flo)
+        surface = enneper.Surface.from_json(file_like_obj)
         np.testing.assert_equal(surface.ctrl_pnts, CTRL_PNTS)
         np.testing.assert_equal(surface.knots_u, KNOTS_U)
         np.testing.assert_equal(surface.knots_v, KNOTS_V)
-        self.assertEqual(surface.deg_u, DEG_U)
-        self.assertEqual(surface.deg_v, DEG_V)
 
         # close and discard memory buffer
-        flo.close()
+        file_like_obj.close()
+
+    def test_deg_property(self):
+
+        surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V)
+        self.assertEqual(surface.deg_u, DEG_U)
+        self.assertEqual(surface.deg_v, DEG_V)
 
     def test_evaluate_at(self):
         
         # test
-        surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
-        np.testing.assert_equal(surface.evaluate_at(0, 0), [ 0.,  0.,  1.,  1.])
+        surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V)
+        np.testing.assert_equal(surface.evaluate_at(0, 0), [ 0,  0,  1,  1])
 
     def test_export(self):
 
-        # construct test data
-        flo = cStringIO.StringIO()
-        surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V, DEG_U, DEG_V)
-        surface.export(flo)
-        flo.seek(0)
-        data = json.load(flo)
-        flo.close()
+        # construct test obj_to_serialize
+        file_like_obj = cStringIO.StringIO()
+        surface = enneper.Surface(CTRL_PNTS, KNOTS_U, KNOTS_V)
+        surface.export(file_like_obj)
+        file_like_obj.seek(0)
+        obj_to_serialize = json.load(file_like_obj)
+        file_like_obj.close()
 
         # test
-        np.testing.assert_equal(data['ctrl_pnts'], CTRL_PNTS)
-        np.testing.assert_equal(data['knots_u'], KNOTS_U)
-        np.testing.assert_equal(data['knots_u'], KNOTS_U)
-        self.assertEqual(data['deg_u'], DEG_U)
-        self.assertEqual(data['deg_v'], DEG_V)
+        np.testing.assert_equal(obj_to_serialize['ctrl_pnts'], CTRL_PNTS)
+        np.testing.assert_equal(obj_to_serialize['knots_u'], KNOTS_U)
+        np.testing.assert_equal(obj_to_serialize['knots_u'], KNOTS_U)
 
 
 if __name__ == '__main__':

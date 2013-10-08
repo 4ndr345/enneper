@@ -37,17 +37,10 @@ __all__ = ['Surface']
 
 class Surface(object):
 
-    def __init__(self, ctrl_pnts, knots_u, knots_v, deg_u, deg_v):
-        """designated initializer"""
-
-        fdn.check_nurbs_condition(len(ctrl_pnts), len(knots_u), deg_u)
-        fdn.check_nurbs_condition(len(ctrl_pnts[0]), len(knots_v), deg_v)
-
-        self._ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
-        self._knots_u = np.asarray(knots_u, dtype=np.double)
-        self._knots_v = np.asarray(knots_v, dtype=np.double)
-        self._deg_u = deg_u
-        self._deg_v = deg_v
+    def __init__(self, ctrl_pnts, knots_u, knots_v):
+        self.ctrl_pnts = np.asarray(ctrl_pnts, dtype=np.double)
+        self.knots_u = np.asarray(knots_u, dtype=np.double)
+        self.knots_v = np.asarray(knots_v, dtype=np.double)
 
 ###############################################################################
 # constructors
@@ -60,49 +53,25 @@ class Surface(object):
         ctrl_pnts = surface.ctrl_pnts.copy()
         knots_u = surface.knots_u.copy()
         knots_v = surface.knots_v.copy()
-        deg_u = surface.deg_u
-        deg_v = surface.deg_v
 
         # call designated initializer
-        return cls(ctrl_pnts, knots_u, knots_v, deg_u, deg_v)
+        return cls(ctrl_pnts, knots_u, knots_v)
 
     @classmethod
-    def from_json(cls, flo):
-
-        # load data
-        data = json.load(flo)
-        ctrl_pnts = data['ctrl_pnts']
-        knots_u = data['knots_u']
-        knots_v = data['knots_v']
-        deg_u = data['deg_u']
-        deg_v = data['deg_v']
-
-        # call designated initializer
-        return cls(ctrl_pnts, knots_u, knots_v, deg_u, deg_v)
+    def from_json(cls, file_like_obj):
+        return cls(**json.load(file_like_obj))
 
 ###############################################################################
 # properties
 ###############################################################################
 
     @property
-    def ctrl_pnts(self):
-        return self._ctrl_pnts
-
-    @property
-    def knots_u(self):
-        return self._knots_u
-
-    @property
-    def knots_v(self):
-        return self._knots_v
-
-    @property
     def deg_u(self):
-        return self._deg_u
+        return self.knots_u.size - self.ctrl_pnts.shape[0] - 1
 
     @property
     def deg_v(self):
-        return self._deg_v
+        return self.knots_v.size - self.ctrl_pnts.shape[1] - 1
 
 ###############################################################################
 # miscellaneous methods
@@ -111,8 +80,8 @@ class Surface(object):
     def evaluate_at(self, u, v):
 
         # save local to avoid looking up twice or more
-        knots_u, knots_v = self._knots_u, self._knots_v
-        deg_u, deg_v = self._deg_u, self._deg_v
+        knots_u, knots_v = self.knots_u, self.knots_v
+        deg_u, deg_v = self.deg_u, self.deg_v
 
         # low level nurbs function written in cython
         index_u = cfdn.get_index(u, deg_u, knots_u)
@@ -130,15 +99,13 @@ class Surface(object):
         tmp = np.sum(self.ctrl_pnts[lb_u:ub_u, lb_v:ub_v] * basis_funs_u, 0)
         return np.sum(tmp * basis_funs_v, 0)
 
-    def export(self, flo, indent=None):
+    def export(self, file_like_obj, indent=None):
 
         # json can't handle ndarrays
-        data = dict()
-        data['ctrl_pnts'] = self.ctrl_pnts.tolist()
-        data['knots_u'] =  self.knots_u.tolist()
-        data['knots_v'] =  self.knots_v.tolist()
-        data['deg_u'] = self.deg_u
-        data['deg_v'] = self.deg_v
+        obj_to_serialize = dict()
+        obj_to_serialize['ctrl_pnts'] = self.ctrl_pnts.tolist()
+        obj_to_serialize['knots_u'] =  self.knots_u.tolist()
+        obj_to_serialize['knots_v'] =  self.knots_v.tolist()
 
         # export
-        json.dump(data, flo, indent=indent)
+        json.dump(obj_to_serialize, file_like_obj, indent=indent)
